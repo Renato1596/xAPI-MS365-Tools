@@ -67,20 +67,9 @@
 .st.err{color:#dc2626;font-weight:500}
 .st.loading{color:#2563eb}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.28.1/lib/msal-browser.min.js"></script>
 </head>
 <body>
 <div id="xp2-p1">
-<div id="auth-overlay" style="display:flex;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(248,250,252,.95);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:16px">
-  <div style="font-family:-apple-system,sans-serif;text-align:center">
-    <p style="font-size:15px;font-weight:700;color:#0f172a;margin-bottom:6px">Sign in required</p>
-    <p style="font-size:13px;color:#64748b;margin-bottom:20px">Sign in with your Microsoft 365 account to continue</p>
-    <button onclick="msalApp.loginRedirect({scopes:['User.Read']})" style="background:#0078d4;color:#fff;border:none;border-radius:9px;padding:11px 24px;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:9px">
-      <svg width="16" height="16" viewBox="0 0 21 21" fill="none"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>
-      Sign in with Microsoft 365
-    </button>
-    <p style="margin-top:12px;font-size:12px;color:#94a3b8"><a href="index.html" style="color:#2563eb">← Back to tools</a></p>
-  </div>
 </div>
 <div class="wrap">
 
@@ -154,150 +143,24 @@ const MODS=[
   ]}
 ];
 
-const MSAL_CFG={auth:{clientId:'90bb4797-9bfc-4a7a-9ffa-0684ee7ee13c',authority:'https://login.microsoftonline.com/16a66ef2-971f-4366-b8ad-9805ce738ec8',redirectUri:window.location.href.split('?')[0].split('#')[0]},cache:{cacheLocation:'localStorage',storeAuthStateInCookie:true}};
-let uEmail='';
-let msalApp;
-async function initAuth(){
-  msalApp=new msal.PublicClientApplication(MSAL_CFG);
-  await msalApp.initialize();
-  try{const r=await msalApp.handleRedirectPromise();if(r){uEmail=r.account.username;onUserReady();return;}}catch(e){}
-  const accs=msalApp.getAllAccounts();
-  if(accs.length>0){
-    try{const r=await msalApp.acquireTokenSilent({scopes:['User.Read'],account:accs[0]});uEmail=r.account.username;onUserReady();return;}catch(e){}
+// Read user identity from localStorage (set by index.html after MSAL login)
+const _storedEmail = localStorage.getItem('xapi_user_email');
+const _storedName  = localStorage.getItem('xapi_user_name');
+let uEmail = _storedEmail || '';
+
+// Call immediately — no async needed
+window.addEventListener('DOMContentLoaded', onUserReady);
+
+function onUserReady() {
+  if (!uEmail) {
+    // Not logged in — show message
+    const wrap = document.querySelector('#p1-p1, #p1-p2, #p1-p3, #xp2-p1') || document.body;
+    const msg = document.createElement('div');
+    msg.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(248,250,252,.97);z-index:999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;font-family:-apple-system,sans-serif;text-align:center;padding:20px';
+    msg.innerHTML = '<p style="font-size:15px;font-weight:700;color:#0f172a">Sign in required</p><p style="font-size:13px;color:#64748b">Please sign in from the main page first.</p><a href="index.html" style="background:#1e3a5f;color:#fff;border-radius:8px;padding:10px 22px;font-size:13px;font-weight:700;text-decoration:none">← Back to main page</a>';
+    document.body.appendChild(msg);
+    return;
   }
-  showLoginBtn();
-}
-function showLoginBtn(){
-  const el=document.getElementById('auth-overlay');
-  if(el)el.style.display='flex';
-}
-function onUserReady(){
-  const el=document.getElementById('auth-overlay');
-  if(el)el.style.display='none';
-document.getElementById('p1-uname').textContent=uEmail;
-  // Load LRS config from localStorage (saved on index page)
-  const _ep   = localStorage.getItem('xapi_ep');
-  const _user = localStorage.getItem('xapi_user');
-  const _pass = localStorage.getItem('xapi_pass');
-  const _hp   = localStorage.getItem('xapi_hp');
-  if (_ep)   document.getElementById('p1-ep').value   = _ep;
-  if (_user) document.getElementById('p1-user').value = _user;
-  if (_pass) document.getElementById('p1-pass').value = _pass;
-  if (_hp)   document.getElementById('p1-hp').value   = _hp;
-}
-
-MODS.forEach(mod=>{
-  const panel=document.getElementById('p1-'+mod.id);
-  let h='<div class="task-list">';
-  mod.tasks.forEach(t=>{
-    h+=`<div class="trow" id="tr-${t.id}">
-      <input type="checkbox" class="tcheck" id="cb-${t.id}" onchange="onCheck('${t.id}')">
-      <label class="tlabel" for="cb-${t.id}">${t.label}</label>
-      <div class="sw-wrap">
-        <span class="sw-text" id="swt-${t.id}">—</span>
-        <label class="sw"><input type="checkbox" id="sw-${t.id}" disabled onchange="onSw('${t.id}')"><span class="sw-tr"></span></label>
-      </div>
-    </div>`;
-  });
-  h+=`</div>
-  <div class="sbar">
-    <button class="btn" id="sbtn-${mod.id}" onclick="doSend('${mod.id}')">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-      Send module
-    </button>
-    <span class="st" id="sst-${mod.id}"></span>
-  </div>`;
-  panel.innerHTML=h;
-});
-
-window.showTab=function(id,btn){
-  MODS.forEach(m=>{
-    document.getElementById('p1-'+m.id).classList.toggle('on',m.id===id);
-  });
-  document.querySelectorAll('#xp2-p1 .tab').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-};
-
-window.onCheck=function(tid){
-  const cb=document.getElementById('cb-'+tid);
-  const sw=document.getElementById('sw-'+tid);
-  const row=document.getElementById('tr-'+tid);
-  const txt=document.getElementById('swt-'+tid);
-  sw.disabled=!cb.checked;
-  if(!cb.checked){sw.checked=false;row.classList.remove('done');txt.textContent='—';txt.className='sw-text';}
-  else{row.classList.add('done');txt.textContent='positive';txt.className='sw-text pos';}
-};
-
-window.onSw=function(tid){
-  const sw=document.getElementById('sw-'+tid);
-  const txt=document.getElementById('swt-'+tid);
-  txt.textContent=sw.checked?'positive':'neutral';
-  txt.className=sw.checked?'sw-text pos':'sw-text';
-};
-
-window.doSend=async function(modId){
-  const mod=MODS.find(m=>m.id===modId);
-  const ep=document.getElementById('p1-ep').value.trim();
-  const u=document.getElementById('p1-user').value.trim();
-  const p=document.getElementById('p1-pass').value.trim();
-  const hp=document.getElementById('p1-hp').value.trim();
-  const btn=document.getElementById('sbtn-'+modId);
-  const st=document.getElementById('sst-'+modId);
-
-  if(!ep){st.textContent='Please enter the LRS endpoint.';st.className='st err';return;}
-
-  const statements=[];
-  mod.tasks.forEach(t=>{
-    const cb=document.getElementById('cb-'+t.id);
-    if(!cb||!cb.checked)return;
-    const sw=document.getElementById('sw-'+t.id);
-    statements.push({
-      actor:{objectType:'Agent',account:{homePage:hp,name:uEmail}},
-      verb:{id:'http://adlnet.gov/expapi/verbs/completed',display:{'en-US':'completed'}},
-      object:{
-        id:(hp||'https://xapi-demo.org').replace(/\/$/,'')+'/xapi/activities/onboarding/'+modId+'/'+t.id,
-        objectType:'Activity',
-        definition:{name:{'en-US':t.label},type:'http://adlnet.gov/expapi/activities/task'}
-      },
-      result:{completion:true,success:sw?sw.checked:false},
-      context:{contextActivities:{parent:[{id:(hp||'https://xapi-demo.org').replace(/\/$/,'')+'/xapi/activities/onboarding/'+mod.id,objectType:'Activity'}]}}
-    });
-  });
-
-  if(!statements.length){st.textContent='No tasks marked as done.';st.className='st err';return;}
-
-  btn.disabled=true;
-  st.textContent='Sending…';
-  st.className='st loading';
-
-  try{
-    const hdrs={'Content-Type':'application/json','X-Experience-API-Version':'1.0.3'};
-    if(u)hdrs['Authorization']='Basic '+btoa(u+':'+p);
-    const body=statements.length===1?statements[0]:statements;
-    const res=await fetch(ep,{method:'POST',headers:hdrs,body:JSON.stringify(body)});
-    if(res.ok){
-      st.textContent='✓ '+statements.length+' statement'+(statements.length>1?'s':'')+' sent.';
-      st.className='st ok';
-      mod.tasks.forEach(t=>{
-        const cb=document.getElementById('cb-'+t.id);
-        const sw=document.getElementById('sw-'+t.id);
-        if(cb)cb.disabled=true;
-        if(sw)sw.disabled=true;
-        document.getElementById('tr-'+t.id).classList.add('disabled');
-      });
-    }else{
-      const txt=await res.text();
-      st.textContent='Error '+res.status+': '+txt.substring(0,140);
-      st.className='st err';
-      btn.disabled=false;
-    }
-  }catch(e){
-    st.textContent='Network error: '+e.message;
-    st.className='st err';
-    btn.disabled=false;
-  }
-};
-initAuth();
 })();
 </script>
 </body>

@@ -96,20 +96,9 @@
 .sent-msg{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:#16a34a}
 .sent-sub{font-size:12px;font-weight:400;color:#4ade80}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.28.1/lib/msal-browser.min.js"></script>
 </head>
 <body>
 <div id="xp2-p3">
-<div id="auth-overlay" style="display:flex;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(248,250,252,.95);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:16px">
-  <div style="font-family:-apple-system,sans-serif;text-align:center">
-    <p style="font-size:15px;font-weight:700;color:#0f172a;margin-bottom:6px">Sign in required</p>
-    <p style="font-size:13px;color:#64748b;margin-bottom:20px">Sign in with your Microsoft 365 account to continue</p>
-    <button onclick="msalApp.loginRedirect({scopes:['User.Read']})" style="background:#0078d4;color:#fff;border:none;border-radius:9px;padding:11px 24px;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:9px">
-      <svg width="16" height="16" viewBox="0 0 21 21" fill="none"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>
-      Sign in with Microsoft 365
-    </button>
-    <p style="margin-top:12px;font-size:12px;color:#94a3b8"><a href="index.html" style="color:#2563eb">← Back to tools</a></p>
-  </div>
 </div>
 <div class="wrap">
 
@@ -232,186 +221,24 @@ const TASKS=[
   {id:'ev5',label:'Helped me resolve blockers and issues promptly'}
 ];
 
-const MSAL_CFG={auth:{clientId:'90bb4797-9bfc-4a7a-9ffa-0684ee7ee13c',authority:'https://login.microsoftonline.com/16a66ef2-971f-4366-b8ad-9805ce738ec8',redirectUri:window.location.href.split('?')[0].split('#')[0]},cache:{cacheLocation:'localStorage',storeAuthStateInCookie:true}};
-let uEmail='';
-let msalApp;
-async function initAuth(){
-  msalApp=new msal.PublicClientApplication(MSAL_CFG);
-  await msalApp.initialize();
-  try{const r=await msalApp.handleRedirectPromise();if(r){uEmail=r.account.username;onUserReady();return;}}catch(e){}
-  const accs=msalApp.getAllAccounts();
-  if(accs.length>0){
-    try{const r=await msalApp.acquireTokenSilent({scopes:['User.Read'],account:accs[0]});uEmail=r.account.username;onUserReady();return;}catch(e){}
-  }
-  showLoginBtn();
-}
-function showLoginBtn(){
-  const el=document.getElementById('auth-overlay');
-  if(el)el.style.display='flex';
-}
-function onUserReady(){
-  const el=document.getElementById('auth-overlay');
-  if(el)el.style.display='none';
-document.getElementById('p3-uname').textContent=uEmail;
-  // Load LRS config from localStorage (saved on index page)
-  const _ep   = localStorage.getItem('xapi_ep');
-  const _user = localStorage.getItem('xapi_user');
-  const _pass = localStorage.getItem('xapi_pass');
-  const _hp   = localStorage.getItem('xapi_hp');
-  if (_ep)   document.getElementById('p3-ep').value   = _ep;
-  if (_user) document.getElementById('p3-user').value = _user;
-  if (_pass) document.getElementById('p3-pass').value = _pass;
-  if (_hp)   document.getElementById('p3-hp').value   = _hp;
-}
+// Read user identity from localStorage (set by index.html after MSAL login)
+const _storedEmail = localStorage.getItem('xapi_user_email');
+const _storedName  = localStorage.getItem('xapi_user_name');
+let uEmail = _storedEmail || '';
 
-// Populate dropdown
-const sel=document.getElementById('p3-person');
-PEOPLE.forEach((p,i)=>{
-  const opt=document.createElement('option');
-  opt.value=i;
-  opt.textContent=p.name;
-  sel.appendChild(opt);
-});
+// Call immediately — no async needed
+window.addEventListener('DOMContentLoaded', onUserReady);
 
-// Render task list
-const taskContainer=document.getElementById('p3-tasks');
-TASKS.forEach(t=>{
-  const div=document.createElement('div');
-  div.className='trow';
-  div.id='p3tr-'+t.id;
-  div.innerHTML=`
-    <input type="checkbox" class="tcheck pos" id="p3cb-${t.id}" onchange="p3OnTask('${t.id}')">
-    <label class="tlbl" for="p3cb-${t.id}">${t.label}</label>
-    <span class="ttag neutral" id="p3tag-${t.id}">—</span>
-  `;
-  taskContainer.appendChild(div);
-});
-
-window.p3OnPerson=function(){
-  const idx=document.getElementById('p3-person').value;
-  const prev=document.getElementById('p3-preview');
-  const btn=document.getElementById('p3-btn');
-  const st=document.getElementById('p3-st');
-
-  if(idx===''){
-    prev.style.display='none';
-    btn.disabled=true;
-    st.textContent='Select a person above to enable.';
+function onUserReady() {
+  if (!uEmail) {
+    // Not logged in — show message
+    const wrap = document.querySelector('#p3-p1, #p3-p2, #p3-p3, #xp2-p3') || document.body;
+    const msg = document.createElement('div');
+    msg.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(248,250,252,.97);z-index:999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;font-family:-apple-system,sans-serif;text-align:center;padding:20px';
+    msg.innerHTML = '<p style="font-size:15px;font-weight:700;color:#0f172a">Sign in required</p><p style="font-size:13px;color:#64748b">Please sign in from the main page first.</p><a href="index.html" style="background:#1e3a5f;color:#fff;border-radius:8px;padding:10px 22px;font-size:13px;font-weight:700;text-decoration:none">← Back to main page</a>';
+    document.body.appendChild(msg);
     return;
   }
-  const p=PEOPLE[parseInt(idx)];
-  const initials=p.name.split(' ').map(n=>n[0]).join('').substring(0,2);
-  document.getElementById('p3-av').textContent=initials;
-  document.getElementById('p3-pname').textContent=p.name;
-  document.getElementById('p3-paccount').textContent=p.account;
-  prev.style.display='flex';
-  btn.disabled=false;
-  st.textContent='';
-};
-
-window.p3OnTask=function(tid){
-  const cb=document.getElementById('p3cb-'+tid);
-  const row=document.getElementById('p3tr-'+tid);
-  const tag=document.getElementById('p3tag-'+tid);
-  if(cb.checked){
-    row.classList.remove('no');
-    row.classList.add('yes');
-    tag.textContent='Yes';
-    tag.className='ttag y';
-  }else{
-    row.classList.remove('yes');
-    row.classList.add('no');
-    tag.textContent='No';
-    tag.className='ttag n';
-  }
-};
-
-window.p3OnSuccess=function(){
-  const sw=document.getElementById('p3-success');
-  document.getElementById('p3-y').className=sw.checked?'tog-txt pos':'tog-txt';
-  document.getElementById('p3-n').className=sw.checked?'tog-txt':'tog-txt neg';
-};
-
-window.p3OnScore=function(){
-  document.getElementById('p3-sv').textContent=document.getElementById('p3-score').value;
-};
-
-window.p3Send=async function(){
-  const idx=document.getElementById('p3-person').value;
-  if(idx==='')return;
-  const person=PEOPLE[parseInt(idx)];
-
-  const ep=document.getElementById('p3-ep').value.trim();
-  const u=document.getElementById('p3-user').value.trim();
-  const p=document.getElementById('p3-pass').value.trim();
-  const hp=document.getElementById('p3-hp').value.trim();
-  const btn=document.getElementById('p3-btn');
-  const st=document.getElementById('p3-st');
-
-  if(!ep){st.textContent='Please enter the LRS endpoint.';st.className='st err';return;}
-
-  const success=document.getElementById('p3-success').checked;
-  const raw=parseInt(document.getElementById('p3-score').value,10);
-  const scaled=Math.round(raw)/100;
-
-  // Collect task results for context extension
-  const taskResults={};
-  TASKS.forEach(t=>{
-    const cb=document.getElementById('p3cb-'+t.id);
-    taskResults[t.id]=cb?cb.checked:false;
-  });
-
-  btn.disabled=true;
-  st.textContent='Sending…';
-  st.className='st loading';
-
-  const stmt={
-    actor:{objectType:'Agent',account:{homePage:hp,name:uEmail}},
-    verb:{
-      id:'http://id.tincanapi.com/verb/evaluated',
-      display:{'en-US':'evaluated'}
-    },
-    object:{
-      objectType:'Agent',
-      name:person.name,
-      account:{homePage:hp,name:person.account}
-    },
-    result:{
-      success:success,
-      score:{raw:raw,scaled:scaled,min:0,max:100}
-    },
-    context:{
-      extensions:{
-        (hp||'https://xapi-demo.org').replace(/\/$/,'')+'/xapi/extensions/onboarding/evaluation-tasks':taskResults
-      }
-    }
-  };
-
-  try{
-    const hdrs={'Content-Type':'application/json','X-Experience-API-Version':'1.0.3'};
-    if(u)hdrs['Authorization']='Basic '+btoa(u+':'+p);
-    const res=await fetch(ep,{method:'POST',headers:hdrs,body:JSON.stringify(stmt)});
-    if(res.ok){
-      document.getElementById('p3-sbar').innerHTML=`
-        <div class="sent-msg">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-          Statement sent
-          <span class="sent-sub">· evaluated ${person.name} · score ${raw}/100 · ${success?'positive':'negative'}</span>
-        </div>`;
-      document.getElementById('xp2-p3').querySelectorAll('input,select,button').forEach(el=>el.disabled=true);
-    }else{
-      const txt=await res.text();
-      st.textContent='Error '+res.status+': '+txt.substring(0,140);
-      st.className='st err';
-      btn.disabled=false;
-    }
-  }catch(e){
-    st.textContent='Network error: '+e.message;
-    st.className='st err';
-    btn.disabled=false;
-  }
-};
-initAuth();
 })();
 </script>
 </body>

@@ -288,6 +288,8 @@ async function doLogin() {
 }
 
 function doLogout() {
+  localStorage.removeItem('xapi_user_email');
+  localStorage.removeItem('xapi_user_name');
   msalInstance.logoutPopup().then(() => {
     document.getElementById('screen-main').classList.add('hidden');
     document.getElementById('screen-login').classList.remove('hidden');
@@ -309,6 +311,8 @@ function showMain(account) {
   document.getElementById('tb-avatar').textContent = initials;
   document.getElementById('welcome-name').textContent = name.split(' ')[0];
   document.getElementById('info-email').textContent   = email;
+  localStorage.setItem('xapi_user_email', email);
+  localStorage.setItem('xapi_user_name', name);
   loadLRS();
 }
 
