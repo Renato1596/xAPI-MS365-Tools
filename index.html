@@ -254,13 +254,6 @@ window.onload = async function() {
   msalInstance = new msal.PublicClientApplication(MSAL_CONFIG);
   await msalInstance.initialize();
 
-  try {
-    const resp = await msalInstance.handleRedirectPromise();
-    if (resp) { showMain(resp.account); return; }
-  } catch(e) {
-    showErr(e.message);
-  }
-
   const accounts = msalInstance.getAllAccounts();
   if (accounts.length > 0) {
     try {
@@ -271,17 +264,23 @@ window.onload = async function() {
 };
 
 async function doLogin() {
-  document.getElementById('btn-login').disabled = true;
+  const btn = document.getElementById('btn-login');
+  btn.disabled = true;
   try {
-    await msalInstance.loginRedirect({ scopes: SCOPES });
+    const resp = await msalInstance.loginPopup({ scopes: SCOPES });
+    showMain(resp.account);
   } catch(e) {
     showErr(e.message);
-    document.getElementById('btn-login').disabled = false;
+    btn.disabled = false;
   }
 }
 
 function doLogout() {
-  msalInstance.logoutRedirect();
+  msalInstance.logoutPopup().then(() => {
+    document.getElementById('screen-main').classList.add('hidden');
+    document.getElementById('screen-login').classList.remove('hidden');
+    document.getElementById('topbar-user').classList.add('hidden');
+  });
 }
 
 function showMain(account) {
