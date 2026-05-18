@@ -251,7 +251,7 @@ window.p2Send=async function(modId){
     actor:{objectType:'Agent',account:{homePage:hp,name:uEmail}},
     verb:{id:'http://adlnet.gov/expapi/verbs/completed',display:{'en-US':'completed'}},
     object:{
-      id:mod.iri,objectType:'Activity',
+      id:(hp||'https://xapi-demo.org').replace(/\/$/,'')+'/xapi/activities/onboarding/'+mod.id,objectType:'Activity',
       definition:{name:{'en-US':mod.title},type:'http://adlnet.gov/expapi/activities/module'}
     },
     result:{completion:completed,success:success,score:{raw:raw,scaled:scaled,min:0,max:100}}

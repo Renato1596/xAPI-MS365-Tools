@@ -255,12 +255,12 @@ window.doSend=async function(modId){
       actor:{objectType:'Agent',account:{homePage:hp,name:uEmail}},
       verb:{id:'http://adlnet.gov/expapi/verbs/completed',display:{'en-US':'completed'}},
       object:{
-        id:'urn:xapi:onboarding:'+modId+':'+t.id,
+        id:(hp||'https://xapi-demo.org').replace(/\/$/,'')+'/xapi/activities/onboarding/'+modId+'/'+t.id,
         objectType:'Activity',
         definition:{name:{'en-US':t.label},type:'http://adlnet.gov/expapi/activities/task'}
       },
       result:{completion:true,success:sw?sw.checked:false},
-      context:{contextActivities:{parent:[{id:mod.iri,objectType:'Activity'}]}}
+      context:{contextActivities:{parent:[{id:(hp||'https://xapi-demo.org').replace(/\/$/,'')+'/xapi/activities/onboarding/'+mod.id,objectType:'Activity'}]}}
     });
   });
 

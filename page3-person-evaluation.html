@@ -382,7 +382,7 @@ window.p3Send=async function(){
     },
     context:{
       extensions:{
-        'urn:xapi:onboarding:evaluation:tasks':taskResults
+        (hp||'https://xapi-demo.org').replace(/\/$/,'')+'/xapi/extensions/onboarding/evaluation-tasks':taskResults
       }
     }
   };
