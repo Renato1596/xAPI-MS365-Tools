@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>xAPI MS365 Tools</title>
+<script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.28.1/lib/msal-browser.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f1f5f9;min-height:100vh;color:#1e293b}
+
+/* Header */
+.topbar{background:#1e3a5f;padding:0 32px;height:56px;display:flex;align-items:center;justify-content:space-between}
+.topbar-logo{display:flex;align-items:center;gap:10px}
+.logo-dots{display:flex;gap:4px}
+.logo-dot{width:8px;height:8px;border-radius:50%}
+.logo-dot:nth-child(1){background:#60a5fa}
+.logo-dot:nth-child(2){background:#34d399}
+.logo-dot:nth-child(3){background:#f59e0b}
+.logo-name{font-size:14px;font-weight:700;color:#fff;letter-spacing:.04em}
+.logo-tag{font-size:11px;color:#93c5fd;margin-left:8px;font-weight:400}
+.topbar-user{display:flex;align-items:center;gap:10px}
+.avatar{width:32px;height:32px;border-radius:50%;background:#3b5998;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+.user-info{text-align:right}
+.user-info-name{font-size:13px;font-weight:600;color:#fff}
+.user-info-email{font-size:11px;color:#93c5fd}
+.btn-signout{background:none;border:1px solid rgba(255,255,255,.2);color:#93c5fd;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;transition:all .2s}
+.btn-signout:hover{background:rgba(255,255,255,.1);color:#fff}
+
+/* Hero / Login */
+.hero{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 56px);padding:40px 20px;text-align:center}
+.hero h1{font-size:32px;font-weight:800;color:#0f172a;letter-spacing:-.02em;margin-bottom:12px}
+.hero p{font-size:16px;color:#64748b;max-width:480px;line-height:1.6;margin-bottom:36px}
+.btn-login{background:#0078d4;color:#fff;border:none;border-radius:10px;padding:13px 28px;font-size:15px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:10px;transition:background .2s;box-shadow:0 2px 8px rgba(0,120,212,.3)}
+.btn-login:hover{background:#106ebe}
+.btn-login:disabled{background:#94a3b8;cursor:default;box-shadow:none}
+.login-note{font-size:13px;color:#94a3b8;margin-top:16px}
+
+/* Main content (after login) */
+.main{padding:36px 32px;max-width:900px;margin:0 auto}
+.welcome{margin-bottom:32px}
+.welcome h2{font-size:22px;font-weight:700;color:#0f172a;margin-bottom:4px}
+.welcome p{font-size:14px;color:#64748b}
+
+/* Cards grid */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+.card{background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:14px;transition:border-color .2s,transform .2s,box-shadow .2s;text-decoration:none;color:inherit}
+.card:hover{border-color:#93c5fd;transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.08)}
+.card-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.card-icon.blue{background:#eff6ff}
+.card-icon.green{background:#f0fdf4}
+.card-icon.purple{background:#f5f3ff}
+.card-num{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;margin-bottom:2px}
+.card-title{font-size:16px;font-weight:700;color:#0f172a}
+.card-desc{font-size:13px;color:#64748b;line-height:1.55;flex:1}
+.card-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.tag{font-size:11px;font-weight:600;padding:3px 8px;border-radius:5px}
+.tag.blue{background:#eff6ff;color:#2563eb}
+.tag.green{background:#f0fdf4;color:#16a34a}
+.tag.purple{background:#f5f3ff;color:#7c3aed}
+.tag.amber{background:#fffbeb;color:#d97706}
+.card-arrow{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#2563eb;margin-top:4px}
+
+/* Info box */
+.infobox{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:18px 20px;margin-bottom:20px;display:flex;gap:14px;align-items:flex-start}
+.infobox-icon{color:#2563eb;flex-shrink:0;margin-top:1px}
+.infobox-text{font-size:13px;color:#475569;line-height:1.6}
+.infobox-text strong{color:#0f172a}
+/* LRS Config */
+.lrs-box{background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:28px}
+.lrs-box-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.lrs-box-ttl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#94a3b8}
+.lrs-saved{font-size:12px;font-weight:600;color:#16a34a;display:none;align-items:center;gap:5px}
+.lrs-saved.on{display:flex}
+.lrs-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.lf{display:flex;flex-direction:column;gap:4px}
+.lf.full{grid-column:1/-1}
+.lf label{font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em}
+.lf input{border:1px solid #e2e8f0;border-radius:7px;padding:7px 11px;font-size:13px;color:#1e293b;background:#f8fafc;outline:none;transition:border-color .2s,background .2s}
+.lf input:focus{border-color:#93c5fd;background:#fff}
+.btn-save{margin-top:14px;background:#1e3a5f;color:#fff;border:none;border-radius:8px;padding:9px 22px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:background .2s}
+.btn-save:hover{background:#1d4ed8}
+
+.st{font-size:14px;color:#dc2626;margin-top:12px;font-weight:500}
+
+/* Hidden/visible */
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo">
+    <div class="logo-dots">
+      <div class="logo-dot"></div>
+      <div class="logo-dot"></div>
+      <div class="logo-dot"></div>
+    </div>
+    <span class="logo-name">xAPI MS365 Tools</span>
+    <span class="logo-tag">by Cartesiani</span>
+  </div>
+  <div class="topbar-user hidden" id="topbar-user">
+    <div class="user-info">
+      <div class="user-info-name" id="tb-name"></div>
+      <div class="user-info-email" id="tb-email"></div>
+    </div>
+    <div class="avatar" id="tb-avatar"></div>
+    <button class="btn-signout" onclick="doLogout()">Sign out</button>
+  </div>
+</div>
+
+<!-- Login screen -->
+<div class="hero" id="screen-login">
+  <h1>xAPI MS365 Tools</h1>
+  <p>Practical examples of xAPI statement tracking integrated with your Microsoft 365 identity. Sign in to get started.</p>
+  <button class="btn-login" id="btn-login" onclick="doLogin()">
+    <svg width="18" height="18" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
+      <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
+      <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
+      <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+    </svg>
+    Sign in with Microsoft 365
+  </button>
+  <p class="login-note">Your Microsoft 365 account will be used as the xAPI actor</p>
+  <div class="st hidden" id="login-err"></div>
+</div>
+
+<!-- Main screen -->
+<div class="main hidden" id="screen-main">
+  <div class="welcome">
+    <h2>Welcome, <span id="welcome-name"></span></h2>
+    <p>Select a demo tool below. Your Microsoft 365 identity will be automatically used as the xAPI actor in every statement.</p>
+  </div>
+
+  <div class="infobox">
+    <svg class="infobox-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <div class="infobox-text">
+      <strong>Signed in as <span id="info-email"></span></strong> — your account is the actor in all xAPI statements. These pages can also be embedded as iframes in SharePoint: your login is remembered automatically.
+    </div>
+  </div>
+
+  <div class="lrs-box">
+    <div class="lrs-box-hdr">
+      <span class="lrs-box-ttl">LRS Configuration</span>
+      <span class="lrs-saved" id="lrs-saved">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+        Saved — all tools will use these settings
+      </span>
+    </div>
+    <div class="lrs-grid">
+      <div class="lf full">
+        <label>LRS Statements Endpoint</label>
+        <input type="text" id="lrs-ep" placeholder="https://your-lrs/xAPI/statements">
+      </div>
+      <div class="lf">
+        <label>Username / Client ID</label>
+        <input type="text" id="lrs-user" placeholder="username">
+      </div>
+      <div class="lf">
+        <label>Password / Secret</label>
+        <input type="password" id="lrs-pass" placeholder="password">
+      </div>
+      <div class="lf full">
+        <label>Actor homePage (your LMS base URL)</label>
+        <input type="text" id="lrs-hp" placeholder="https://your-tenant.fa.oraclecloud.com">
+      </div>
+    </div>
+    <button class="btn-save" onclick="saveLRS()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      Save settings
+    </button>
+  </div>
+
+  <div class="cards">
+
+    <a class="card" href="page1-task-tracker.html" target="_blank">
+      <div class="card-icon blue">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" aria-hidden="true"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      </div>
+      <div>
+        <div class="card-num">Demo 01</div>
+        <div class="card-title">Onboarding Task Tracker</div>
+      </div>
+      <div class="card-desc">Mark completed tasks across IT, Compliance, and L&D onboarding modules. Each checked task generates an xAPI statement with completion and success data.</div>
+      <div class="card-tags">
+        <span class="tag blue">completed</span>
+        <span class="tag green">result.success</span>
+        <span class="tag amber">context.parent</span>
+      </div>
+      <div class="card-arrow">
+        Open tool
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </div>
+    </a>
+
+    <a class="card" href="page2-module-evaluation.html" target="_blank">
+      <div class="card-icon green">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      </div>
+      <div>
+        <div class="card-num">Demo 02</div>
+        <div class="card-title">Module Evaluation</div>
+      </div>
+      <div class="card-desc">Rate each onboarding module with a satisfaction toggle and a 0–100 score. Each module sends an independent statement — once sent, the card locks to prevent duplicates.</div>
+      <div class="card-tags">
+        <span class="tag blue">completed</span>
+        <span class="tag green">result.score</span>
+        <span class="tag purple">result.success</span>
+      </div>
+      <div class="card-arrow">
+        Open tool
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </div>
+    </a>
+
+    <a class="card" href="page3-person-evaluation.html" target="_blank">
+      <div class="card-icon purple">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <div>
+        <div class="card-num">Demo 03</div>
+        <div class="card-title">Person Evaluation</div>
+      </div>
+      <div class="card-desc">Evaluate your onboarding referent. Select a person from the list, rate specific behaviours, and submit an overall score. The evaluated person becomes the Agent object in the xAPI statement.</div>
+      <div class="card-tags">
+        <span class="tag purple">evaluated</span>
+        <span class="tag blue">object: Agent</span>
+        <span class="tag amber">context.extensions</span>
+      </div>
+      <div class="card-arrow">
+        Open tool
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<script>
+const MSAL_CONFIG = {
+  auth: {
+    clientId: '90bb4797-9bfc-4a7a-9ffa-0684ee7ee13c',
+    authority: 'https://login.microsoftonline.com/16a66ef2-971f-4366-b8ad-9805ce738ec8',
+    redirectUri: window.location.href.split('?')[0].split('#')[0]
+  },
+  cache: { cacheLocation: 'localStorage', storeAuthStateInCookie: true }
+};
+
+const SCOPES = ['User.Read'];
+let msalInstance;
+
+window.onload = async function() {
+  msalInstance = new msal.PublicClientApplication(MSAL_CONFIG);
+  await msalInstance.initialize();
+
+  try {
+    const resp = await msalInstance.handleRedirectPromise();
+    if (resp) { showMain(resp.account); return; }
+  } catch(e) {
+    showErr(e.message);
+  }
+
+  const accounts = msalInstance.getAllAccounts();
+  if (accounts.length > 0) {
+    try {
+      const resp = await msalInstance.acquireTokenSilent({ scopes: SCOPES, account: accounts[0] });
+      showMain(resp.account);
+    } catch(e) { /* needs login */ }
+  }
+};
+
+async function doLogin() {
+  document.getElementById('btn-login').disabled = true;
+  try {
+    await msalInstance.loginRedirect({ scopes: SCOPES });
+  } catch(e) {
+    showErr(e.message);
+    document.getElementById('btn-login').disabled = false;
+  }
+}
+
+function doLogout() {
+  msalInstance.logoutRedirect();
+}
+
+function showMain(account) {
+  const email = account.username;
+  const name  = account.name || email.split('@')[0];
+  const initials = name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+
+  document.getElementById('screen-login').classList.add('hidden');
+  document.getElementById('screen-main').classList.remove('hidden');
+  document.getElementById('topbar-user').classList.remove('hidden');
+
+  document.getElementById('tb-name').textContent   = name;
+  document.getElementById('tb-email').textContent  = email;
+  document.getElementById('tb-avatar').textContent = initials;
+  document.getElementById('welcome-name').textContent = name.split(' ')[0];
+  document.getElementById('info-email').textContent   = email;
+  loadLRS();
+}
+
+function showErr(msg) {
+  const el = document.getElementById('login-err');
+  el.textContent = 'Login error: ' + msg;
+  el.classList.remove('hidden');
+}
+
+function saveLRS() {
+  localStorage.setItem('xapi_ep',   document.getElementById('lrs-ep').value);
+  localStorage.setItem('xapi_user', document.getElementById('lrs-user').value);
+  localStorage.setItem('xapi_pass', document.getElementById('lrs-pass').value);
+  localStorage.setItem('xapi_hp',   document.getElementById('lrs-hp').value);
+  const badge = document.getElementById('lrs-saved');
+  badge.classList.add('on');
+  setTimeout(() => badge.classList.remove('on'), 3000);
+}
+
+function loadLRS() {
+  const ep   = localStorage.getItem('xapi_ep');
+  const user = localStorage.getItem('xapi_user');
+  const pass = localStorage.getItem('xapi_pass');
+  const hp   = localStorage.getItem('xapi_hp');
+  if (ep)   document.getElementById('lrs-ep').value   = ep;
+  if (user) document.getElementById('lrs-user').value = user;
+  if (pass) document.getElementById('lrs-pass').value = pass;
+  if (hp)   document.getElementById('lrs-hp').value   = hp;
+}
+</script>
+</body>
+</html>

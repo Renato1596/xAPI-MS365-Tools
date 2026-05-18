@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Referent Evaluation · xAPI</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+#xp2-p3{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;min-height:100vh;padding:28px 20px;color:#1e293b}
+.wrap{max-width:680px;margin:0 auto}
+
+/* Config */
+.cfg{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:18px 20px;margin-bottom:28px}
+.cfg-ttl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#94a3b8;margin-bottom:14px}
+.cfg-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cf{display:flex;flex-direction:column;gap:4px}
+.cf.full{grid-column:1/-1}
+.cf label{font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em}
+.cf input{border:1px solid #e2e8f0;border-radius:7px;padding:7px 11px;font-size:13px;color:#1e293b;background:#f8fafc;outline:none;transition:border-color .2s,background .2s}
+.cf input:focus{border-color:#93c5fd;background:#fff}
+
+/* Header */
+.hdr{margin-bottom:24px}
+.hdr h1{font-size:21px;font-weight:700;color:#0f172a;letter-spacing:-.01em}
+.hdr p{font-size:14px;color:#64748b;margin-top:5px;line-height:1.55}
+.user-pill{display:inline-flex;align-items:center;gap:7px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:999px;padding:5px 13px;font-size:12px;color:#1d4ed8;font-weight:600;margin-top:10px}
+
+/* Person selector */
+.selector-card{background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;padding:18px 20px;margin-bottom:22px}
+.sel-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;margin-bottom:10px}
+.person-select{width:100%;border:1px solid #e2e8f0;border-radius:8px;padding:9px 12px;font-size:14px;color:#1e293b;background:#f8fafc;outline:none;cursor:pointer;transition:border-color .2s}
+.person-select:focus{border-color:#93c5fd;background:#fff}
+.person-preview{margin-top:12px;display:flex;align-items:center;gap:12px;padding:12px;background:#f8fafc;border-radius:9px;border:1px solid #e2e8f0}
+.avatar{width:38px;height:38px;border-radius:50%;background:#e0e7ff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#4338ca;flex-shrink:0}
+.person-info p{font-size:14px;font-weight:600;color:#0f172a;margin-bottom:2px}
+.person-info span{font-size:12px;color:#64748b;font-family:monospace}
+
+/* Eval card */
+.eval-card{background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:22px;margin-bottom:20px}
+.eval-ttl{font-size:13px;font-weight:700;color:#0f172a;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;gap:8px}
+.eval-ttl svg{color:#64748b}
+
+/* Task list */
+.task-list{display:flex;flex-direction:column;gap:8px;margin-bottom:22px}
+.trow{background:#f8fafc;border:1px solid #e2e8f0;border-radius:9px;padding:12px 14px;display:flex;align-items:center;gap:12px;transition:border-color .2s,background .2s}
+.trow.yes{border-color:#86efac;background:#f0fdf4}
+.trow.no{border-color:#fca5a5;background:#fef2f2}
+.tcheck{width:17px;height:17px;cursor:pointer;flex-shrink:0}
+.tcheck.pos{accent-color:#16a34a}
+.tcheck.neg{accent-color:#dc2626}
+.tcheck:disabled{cursor:default}
+.tlbl{flex:1;font-size:13px;color:#475569;line-height:1.4}
+.trow.yes .tlbl{color:#15803d;font-weight:500}
+.trow.no .tlbl{color:#b91c1c}
+.ttag{font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px;min-width:36px;text-align:center;flex-shrink:0}
+.ttag.y{background:#dcfce7;color:#16a34a}
+.ttag.n{background:#fee2e2;color:#dc2626}
+.ttag.neutral{background:#f1f5f9;color:#94a3b8}
+
+/* Overall assessment */
+.assess{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:22px}
+.assess-grp{display:flex;flex-direction:column;gap:8px}
+.assess-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8}
+.toggle-inline{display:flex;align-items:center;gap:10px}
+.tog-txt{font-size:13px;font-weight:700;color:#94a3b8;transition:color .2s}
+.tog-txt.pos{color:#16a34a}
+.tog-txt.neg{color:#dc2626}
+.score-wrap{display:flex;align-items:center;gap:10px}
+.score-slider{flex:1;cursor:pointer;accent-color:#2563eb}
+.score-val{font-size:22px;font-weight:800;color:#0f172a;min-width:40px;text-align:right;font-variant-numeric:tabular-nums}
+
+/* Switch */
+.sw{position:relative;display:inline-block;width:38px;height:21px}
+.sw input{opacity:0;width:0;height:0}
+.sw-tr{position:absolute;top:0;left:0;right:0;bottom:0;background:#cbd5e1;border-radius:21px;transition:.25s;cursor:pointer}
+.sw-tr::before{position:absolute;content:"";height:15px;width:15px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.25s}
+.sw input:checked+.sw-tr{background:#22c55e}
+.sw input:checked+.sw-tr::before{transform:translateX(17px)}
+.sw input:disabled+.sw-tr{opacity:.35;cursor:default}
+
+/* Verb label */
+.verb-note{font-size:12px;color:#94a3b8;padding:10px 14px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;margin-bottom:16px;font-family:monospace}
+.verb-note strong{color:#4338ca}
+
+/* Send */
+.sbar{display:flex;align-items:center;gap:14px;padding-top:16px;border-top:1px solid #f1f5f9}
+.btn{background:#1e3a5f;color:#fff;border:none;border-radius:8px;padding:9px 22px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:background .2s,transform .1s}
+.btn:hover:not(:disabled){background:#1d4ed8}
+.btn:active:not(:disabled){transform:scale(.97)}
+.btn:disabled{background:#94a3b8;cursor:default}
+.st{font-size:13px;color:#64748b}
+.st.ok{color:#16a34a;font-weight:600}
+.st.err{color:#dc2626;font-weight:500}
+.st.loading{color:#2563eb}
+
+.sent-msg{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:#16a34a}
+.sent-sub{font-size:12px;font-weight:400;color:#4ade80}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.28.1/lib/msal-browser.min.js"></script>
+</head>
+<body>
+<div id="xp2-p3">
+<div id="auth-overlay" style="display:flex;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(248,250,252,.95);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:16px">
+  <div style="font-family:-apple-system,sans-serif;text-align:center">
+    <p style="font-size:15px;font-weight:700;color:#0f172a;margin-bottom:6px">Sign in required</p>
+    <p style="font-size:13px;color:#64748b;margin-bottom:20px">Sign in with your Microsoft 365 account to continue</p>
+    <button onclick="msalApp.loginRedirect({scopes:['User.Read']})" style="background:#0078d4;color:#fff;border:none;border-radius:9px;padding:11px 24px;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:9px">
+      <svg width="16" height="16" viewBox="0 0 21 21" fill="none"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>
+      Sign in with Microsoft 365
+    </button>
+    <p style="margin-top:12px;font-size:12px;color:#94a3b8"><a href="index.html" style="color:#2563eb">← Back to tools</a></p>
+  </div>
+</div>
+<div class="wrap">
+
+<div class="cfg">
+  <div class="cfg-ttl">LRS Configuration</div>
+  <div class="cfg-grid">
+    <div class="cf full">
+      <label>LRS Statements Endpoint</label>
+      <input type="text" id="p3-ep" placeholder="https://your-lrs/xAPI/statements">
+    </div>
+    <div class="cf">
+      <label>Username / Client ID</label>
+      <input type="text" id="p3-user" placeholder="username">
+    </div>
+    <div class="cf">
+      <label>Password / Secret</label>
+      <input type="password" id="p3-pass" placeholder="password">
+    </div>
+    <div class="cf full">
+      <label>Actor homePage (Fusion base URL)</label>
+      <input type="text" id="p3-hp" placeholder="https://your-tenant.fa.oraclecloud.com">
+    </div>
+  </div>
+</div>
+
+<div class="hdr">
+  <h1>Referent Evaluation</h1>
+  <p>Evaluate the person who supported your onboarding. Your feedback is recorded as an xAPI statement where the evaluated person is the <strong>object</strong> of the statement.</p>
+  <div class="user-pill">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    <span id="p3-uname">Loading…</span>
+  </div>
+</div>
+
+<!-- Person selector -->
+<div class="selector-card">
+  <div class="sel-lbl">Who are you evaluating?</div>
+  <select class="person-select" id="p3-person" onchange="p3OnPerson()">
+    <option value="">— Select a person —</option>
+  </select>
+  <div class="person-preview" id="p3-preview" style="display:none">
+    <div class="avatar" id="p3-av">?</div>
+    <div class="person-info">
+      <p id="p3-pname"></p>
+      <span id="p3-paccount"></span>
+    </div>
+  </div>
+</div>
+
+<!-- Evaluation form -->
+<div class="eval-card" id="p3-form">
+  <div class="eval-ttl">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    Task checklist
+  </div>
+
+  <div class="task-list" id="p3-tasks">
+    <!-- rendered by JS -->
+  </div>
+
+  <div class="eval-ttl" style="margin-top:4px">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    Overall assessment
+  </div>
+
+  <div class="assess">
+    <div class="assess-grp">
+      <div class="assess-lbl">Overall outcome</div>
+      <div class="toggle-inline">
+        <span class="tog-txt pos" id="p3-y">Positive</span>
+        <label class="sw"><input type="checkbox" id="p3-success" checked onchange="p3OnSuccess()"><span class="sw-tr"></span></label>
+        <span class="tog-txt" id="p3-n">Negative</span>
+      </div>
+    </div>
+    <div class="assess-grp">
+      <div class="assess-lbl">Score (0–100)</div>
+      <div class="score-wrap">
+        <input type="range" class="score-slider" id="p3-score" min="0" max="100" value="80" step="1" oninput="p3OnScore()">
+        <span class="score-val" id="p3-sv">80</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="verb-note">
+    verb: <strong>evaluated</strong> · object type: <strong>Agent</strong> (the evaluated person)
+  </div>
+
+  <div class="sbar" id="p3-sbar">
+    <button class="btn" id="p3-btn" onclick="p3Send()" disabled>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      Send evaluation
+    </button>
+    <span class="st" id="p3-st">Select a person above to enable.</span>
+  </div>
+</div>
+
+</div>
+</div>
+
+<script>
+(function(){
+const PEOPLE=[
+  {name:'Marco Rossi',account:'m.rossi@xapi-demo.org'},
+  {name:'Sarah Johnson',account:'s.johnson@xapi-demo.org'},
+  {name:'Elena Ferreira',account:'e.ferreira@xapi-demo.org'},
+  {name:'James O\'Brien',account:'j.obrien@xapi-demo.org'},
+  {name:'Chiara Bianchi',account:'c.bianchi@xapi-demo.org'},
+  {name:'David Schmidt',account:'d.schmidt@xapi-demo.org'},
+  {name:'Priya Sharma',account:'p.sharma@xapi-demo.org'},
+  {name:'Thomas Dupont',account:'t.dupont@xapi-demo.org'},
+  {name:'Fatima Al-Hassan',account:'f.alhassan@xapi-demo.org'},
+  {name:'Luca Marino',account:'l.marino@xapi-demo.org'}
+];
+
+const TASKS=[
+  {id:'ev1',label:'Was available and responsive to my questions'},
+  {id:'ev2',label:'Provided clear documentation and guidance'},
+  {id:'ev3',label:'Introduced me to relevant team members and contacts'},
+  {id:'ev4',label:'Followed up on my progress and checked in regularly'},
+  {id:'ev5',label:'Helped me resolve blockers and issues promptly'}
+];
+
+const MSAL_CFG={auth:{clientId:'90bb4797-9bfc-4a7a-9ffa-0684ee7ee13c',authority:'https://login.microsoftonline.com/16a66ef2-971f-4366-b8ad-9805ce738ec8',redirectUri:window.location.href.split('?')[0].split('#')[0]},cache:{cacheLocation:'localStorage',storeAuthStateInCookie:true}};
+let uEmail='';
+let msalApp;
+async function initAuth(){
+  msalApp=new msal.PublicClientApplication(MSAL_CFG);
+  await msalApp.initialize();
+  try{const r=await msalApp.handleRedirectPromise();if(r){uEmail=r.account.username;onUserReady();return;}}catch(e){}
+  const accs=msalApp.getAllAccounts();
+  if(accs.length>0){
+    try{const r=await msalApp.acquireTokenSilent({scopes:['User.Read'],account:accs[0]});uEmail=r.account.username;onUserReady();return;}catch(e){}
+  }
+  showLoginBtn();
+}
+function showLoginBtn(){
+  const el=document.getElementById('auth-overlay');
+  if(el)el.style.display='flex';
+}
+function onUserReady(){
+  const el=document.getElementById('auth-overlay');
+  if(el)el.style.display='none';
+document.getElementById('p3-uname').textContent=uEmail;
+  // Load LRS config from localStorage (saved on index page)
+  const _ep   = localStorage.getItem('xapi_ep');
+  const _user = localStorage.getItem('xapi_user');
+  const _pass = localStorage.getItem('xapi_pass');
+  const _hp   = localStorage.getItem('xapi_hp');
+  if (_ep)   document.getElementById('p3-ep').value   = _ep;
+  if (_user) document.getElementById('p3-user').value = _user;
+  if (_pass) document.getElementById('p3-pass').value = _pass;
+  if (_hp)   document.getElementById('p3-hp').value   = _hp;
+}
+
+// Populate dropdown
+const sel=document.getElementById('p3-person');
+PEOPLE.forEach((p,i)=>{
+  const opt=document.createElement('option');
+  opt.value=i;
+  opt.textContent=p.name;
+  sel.appendChild(opt);
+});
+
+// Render task list
+const taskContainer=document.getElementById('p3-tasks');
+TASKS.forEach(t=>{
+  const div=document.createElement('div');
+  div.className='trow';
+  div.id='p3tr-'+t.id;
+  div.innerHTML=`
+    <input type="checkbox" class="tcheck pos" id="p3cb-${t.id}" onchange="p3OnTask('${t.id}')">
+    <label class="tlbl" for="p3cb-${t.id}">${t.label}</label>
+    <span class="ttag neutral" id="p3tag-${t.id}">—</span>
+  `;
+  taskContainer.appendChild(div);
+});
+
+window.p3OnPerson=function(){
+  const idx=document.getElementById('p3-person').value;
+  const prev=document.getElementById('p3-preview');
+  const btn=document.getElementById('p3-btn');
+  const st=document.getElementById('p3-st');
+
+  if(idx===''){
+    prev.style.display='none';
+    btn.disabled=true;
+    st.textContent='Select a person above to enable.';
+    return;
+  }
+  const p=PEOPLE[parseInt(idx)];
+  const initials=p.name.split(' ').map(n=>n[0]).join('').substring(0,2);
+  document.getElementById('p3-av').textContent=initials;
+  document.getElementById('p3-pname').textContent=p.name;
+  document.getElementById('p3-paccount').textContent=p.account;
+  prev.style.display='flex';
+  btn.disabled=false;
+  st.textContent='';
+};
+
+window.p3OnTask=function(tid){
+  const cb=document.getElementById('p3cb-'+tid);
+  const row=document.getElementById('p3tr-'+tid);
+  const tag=document.getElementById('p3tag-'+tid);
+  if(cb.checked){
+    row.classList.remove('no');
+    row.classList.add('yes');
+    tag.textContent='Yes';
+    tag.className='ttag y';
+  }else{
+    row.classList.remove('yes');
+    row.classList.add('no');
+    tag.textContent='No';
+    tag.className='ttag n';
+  }
+};
+
+window.p3OnSuccess=function(){
+  const sw=document.getElementById('p3-success');
+  document.getElementById('p3-y').className=sw.checked?'tog-txt pos':'tog-txt';
+  document.getElementById('p3-n').className=sw.checked?'tog-txt':'tog-txt neg';
+};
+
+window.p3OnScore=function(){
+  document.getElementById('p3-sv').textContent=document.getElementById('p3-score').value;
+};
+
+window.p3Send=async function(){
+  const idx=document.getElementById('p3-person').value;
+  if(idx==='')return;
+  const person=PEOPLE[parseInt(idx)];
+
+  const ep=document.getElementById('p3-ep').value.trim();
+  const u=document.getElementById('p3-user').value.trim();
+  const p=document.getElementById('p3-pass').value.trim();
+  const hp=document.getElementById('p3-hp').value.trim();
+  const btn=document.getElementById('p3-btn');
+  const st=document.getElementById('p3-st');
+
+  if(!ep){st.textContent='Please enter the LRS endpoint.';st.className='st err';return;}
+
+  const success=document.getElementById('p3-success').checked;
+  const raw=parseInt(document.getElementById('p3-score').value,10);
+  const scaled=Math.round(raw)/100;
+
+  // Collect task results for context extension
+  const taskResults={};
+  TASKS.forEach(t=>{
+    const cb=document.getElementById('p3cb-'+t.id);
+    taskResults[t.id]=cb?cb.checked:false;
+  });
+
+  btn.disabled=true;
+  st.textContent='Sending…';
+  st.className='st loading';
+
+  const stmt={
+    actor:{objectType:'Agent',account:{homePage:hp,name:uEmail}},
+    verb:{
+      id:'http://id.tincanapi.com/verb/evaluated',
+      display:{'en-US':'evaluated'}
+    },
+    object:{
+      objectType:'Agent',
+      name:person.name,
+      account:{homePage:hp,name:person.account}
+    },
+    result:{
+      success:success,
+      score:{raw:raw,scaled:scaled,min:0,max:100}
+    },
+    context:{
+      extensions:{
+        'urn:xapi:onboarding:evaluation:tasks':taskResults
+      }
+    }
+  };
+
+  try{
+    const hdrs={'Content-Type':'application/json','X-Experience-API-Version':'1.0.3'};
+    if(u)hdrs['Authorization']='Basic '+btoa(u+':'+p);
+    const res=await fetch(ep,{method:'POST',headers:hdrs,body:JSON.stringify(stmt)});
+    if(res.ok){
+      document.getElementById('p3-sbar').innerHTML=`
+        <div class="sent-msg">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+          Statement sent
+          <span class="sent-sub">· evaluated ${person.name} · score ${raw}/100 · ${success?'positive':'negative'}</span>
+        </div>`;
+      document.getElementById('xp2-p3').querySelectorAll('input,select,button').forEach(el=>el.disabled=true);
+    }else{
+      const txt=await res.text();
+      st.textContent='Error '+res.status+': '+txt.substring(0,140);
+      st.className='st err';
+      btn.disabled=false;
+    }
+  }catch(e){
+    st.textContent='Network error: '+e.message;
+    st.className='st err';
+    btn.disabled=false;
+  }
+};
+initAuth();
+})();
+</script>
+</body>
+</html>
