@@ -132,28 +132,25 @@ const MODS=[
 ];
 
 // ── Init: read everything from localStorage ──────────────────
-let uEmail = '';
-document.addEventListener('DOMContentLoaded', function() {
-  uEmail = localStorage.getItem('xapi_user_email') || '';
-  const ep   = localStorage.getItem('xapi_ep')   || '';
-  const usr  = localStorage.getItem('xapi_user') || '';
-  const pass = localStorage.getItem('xapi_pass') || '';
-  const hp   = localStorage.getItem('xapi_hp')   || '';
+// Script runs at end of body — DOM already available, no DOMContentLoaded needed
+const uEmail = localStorage.getItem('xapi_user_email') || '';
+const _ep    = localStorage.getItem('xapi_ep')   || '';
+const _usr   = localStorage.getItem('xapi_user') || '';
+const _pass  = localStorage.getItem('xapi_pass') || '';
+const _hp    = localStorage.getItem('xapi_hp')   || '';
 
-  // User pill
+(function applyConfig() {
   const unameEl = document.getElementById('p2-uname');
   if (unameEl) unameEl.textContent = uEmail || '—';
-
-  // LRS fields
   const epEl = document.getElementById('p2-ep');
   const uEl  = document.getElementById('p2-user');
   const pEl  = document.getElementById('p2-pass');
   const hEl  = document.getElementById('p2-hp');
-  if (epEl && ep)   epEl.value   = ep;
-  if (uEl  && usr)  uEl.value    = usr;
-  if (pEl  && pass) pEl.value    = pass;
-  if (hEl  && hp)   hEl.value    = hp;
-});
+  if (epEl && _ep)   epEl.value   = _ep;
+  if (uEl  && _usr)  uEl.value    = _usr;
+  if (pEl  && _pass) pEl.value    = _pass;
+  if (hEl  && _hp)   hEl.value    = _hp;
+})();
 )();
 </script>
 </body>
