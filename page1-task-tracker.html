@@ -6,215 +6,180 @@
 <title>Onboarding Task Tracker · xAPI</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-#xp2-p1{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;padding:28px 20px;color:#1e293b}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;color:#1e293b;padding:24px 20px}
 .wrap{max-width:680px;margin:0 auto}
-
-/* Config */
-.cfg{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:18px 20px;margin-bottom:28px}
-.cfg-ttl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#94a3b8;margin-bottom:14px}
-.cfg-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.cf{display:flex;flex-direction:column;gap:4px}
+.cfg{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:18px 20px;margin-bottom:24px}
+.cfg-ttl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#94a3b8;margin-bottom:12px}
+.cfg-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cf{display:flex;flex-direction:column;gap:3px}
 .cf.full{grid-column:1/-1}
-.cf label{font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em}
-.cf input{border:1px solid #e2e8f0;border-radius:7px;padding:7px 11px;font-size:13px;color:#1e293b;background:#f8fafc;outline:none;transition:border-color .2s,background .2s}
+.cf label{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em}
+.cf input{border:1px solid #e2e8f0;border-radius:7px;padding:7px 10px;font-size:13px;color:#1e293b;background:#f8fafc;outline:none}
 .cf input:focus{border-color:#93c5fd;background:#fff}
-
-/* Header */
-.hdr{margin-bottom:22px}
-.hdr h1{font-size:21px;font-weight:700;color:#0f172a;letter-spacing:-.01em}
-.hdr p{font-size:14px;color:#64748b;margin-top:5px;line-height:1.55}
-.user-pill{display:inline-flex;align-items:center;gap:7px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:999px;padding:5px 13px;font-size:12px;color:#1d4ed8;font-weight:600;margin-top:10px}
-
-/* Tabs */
-.tabs{display:flex;border-bottom:1.5px solid #e2e8f0;margin-bottom:22px;gap:0;overflow-x:auto}
-.tab{padding:10px 20px;font-size:13px;font-weight:600;color:#64748b;background:none;border:none;border-bottom:2.5px solid transparent;margin-bottom:-1.5px;cursor:pointer;transition:color .2s,border-color .2s;white-space:nowrap}
-.tab:hover{color:#0f172a}
+.hdr{margin-bottom:20px}
+.hdr h1{font-size:20px;font-weight:700;color:#0f172a}
+.hdr p{font-size:14px;color:#64748b;margin-top:4px;line-height:1.5}
+.user-pill{display:inline-flex;align-items:center;gap:6px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:999px;padding:4px 12px;font-size:12px;color:#1d4ed8;font-weight:600;margin-top:8px}
+.tabs{display:flex;border-bottom:1.5px solid #e2e8f0;margin-bottom:20px;overflow-x:auto}
+.tab{padding:10px 18px;font-size:13px;font-weight:600;color:#64748b;background:none;border:none;border-bottom:2.5px solid transparent;margin-bottom:-1.5px;cursor:pointer;white-space:nowrap}
 .tab.on{color:#1e3a5f;border-bottom-color:#1e3a5f}
 .panel{display:none}
 .panel.on{display:block}
-
-/* Tasks */
-.task-list{display:flex;flex-direction:column;gap:9px}
-.trow{background:#fff;border:1.5px solid #e2e8f0;border-radius:10px;padding:13px 16px;display:flex;align-items:center;gap:14px;transition:border-color .2s,background .2s}
+.task-list{display:flex;flex-direction:column;gap:8px}
+.trow{background:#fff;border:1.5px solid #e2e8f0;border-radius:10px;padding:12px 15px;display:flex;align-items:center;gap:12px;transition:border-color .2s,background .2s}
 .trow.done{border-color:#86efac;background:#f0fdf4}
-.trow.done.disabled{border-color:#bbf7d0;background:#f7fef9}
-.trow.nosend{opacity:.55}
-.tcheck{width:18px;height:18px;cursor:pointer;accent-color:#16a34a;flex-shrink:0}
+.tcheck{width:17px;height:17px;cursor:pointer;accent-color:#16a34a;flex-shrink:0}
 .tcheck:disabled{cursor:default}
 .tlabel{flex:1;font-size:14px;color:#475569;line-height:1.4}
 .trow.done .tlabel{color:#15803d;font-weight:500}
-
-/* Toggle switch */
-.sw-wrap{display:flex;align-items:center;gap:8px;flex-shrink:0}
-.sw-text{font-size:11px;font-weight:600;color:#94a3b8;min-width:46px;text-align:right;transition:color .2s}
+.sw-wrap{display:flex;align-items:center;gap:7px;flex-shrink:0}
+.sw-text{font-size:11px;font-weight:600;color:#94a3b8;min-width:44px;text-align:right}
 .sw-text.pos{color:#16a34a}
-.sw{position:relative;display:inline-block;width:38px;height:21px}
+.sw{position:relative;display:inline-block;width:37px;height:20px}
 .sw input{opacity:0;width:0;height:0}
-.sw-tr{position:absolute;top:0;left:0;right:0;bottom:0;background:#cbd5e1;border-radius:21px;transition:.25s;cursor:pointer}
-.sw-tr::before{position:absolute;content:"";height:15px;width:15px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.25s}
+.sw-tr{position:absolute;top:0;left:0;right:0;bottom:0;background:#cbd5e1;border-radius:20px;cursor:pointer;transition:.25s}
+.sw-tr::before{position:absolute;content:"";height:14px;width:14px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.25s}
 .sw input:checked+.sw-tr{background:#22c55e}
 .sw input:checked+.sw-tr::before{transform:translateX(17px)}
 .sw input:disabled+.sw-tr{opacity:.35;cursor:default}
-
-/* Send bar */
-.sbar{margin-top:20px;display:flex;align-items:center;gap:14px;padding-top:4px}
-.btn{background:#1e3a5f;color:#fff;border:none;border-radius:8px;padding:9px 22px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:background .2s,transform .1s;letter-spacing:.01em}
+.sbar{margin-top:18px;display:flex;align-items:center;gap:12px}
+.btn{background:#1e3a5f;color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:background .2s}
 .btn:hover:not(:disabled){background:#1d4ed8}
-.btn:active:not(:disabled){transform:scale(.97)}
 .btn:disabled{background:#94a3b8;cursor:default}
-
-.auth-bar{display:flex;align-items:center;gap:10px;padding:6px 0;margin-bottom:8px;flex-wrap:wrap}
-.btn-ms{background:#0078d4;color:#fff;border:none;border-radius:7px;padding:7px 16px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:background .2s}
-.btn-ms:hover{background:#106ebe}
-.btn-signout{background:none;border:1px solid #e2e8f0;color:#64748b;border-radius:7px;padding:5px 12px;font-size:12px;cursor:pointer;transition:all .2s}
-.btn-signout:hover{border-color:#94a3b8;color:#1e293b}
-.save-lrs{margin-top:10px;background:#1e3a5f;color:#fff;border:none;border-radius:7px;padding:7px 18px;font-size:12px;font-weight:600;cursor:pointer;transition:background .2s}
-.save-lrs:hover{background:#1d4ed8}
 .st{font-size:13px;color:#64748b}
 .st.ok{color:#16a34a;font-weight:600}
-.st.err{color:#dc2626;font-weight:500}
+.st.err{color:#dc2626}
 .st.loading{color:#2563eb}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.28.1/lib/msal-browser.min.js"></script>
 </head>
 <body>
-<div id="xp2-p1">
-</div>
 <div class="wrap">
-
 <div class="cfg">
   <div class="cfg-ttl">LRS Configuration</div>
   <div class="cfg-grid">
-    <div class="cf full">
-      <label>LRS Statements Endpoint</label>
-      <input type="text" id="p1-ep" placeholder="https://your-lrs/xAPI/statements">
-    </div>
-    <div class="cf">
-      <label>Username / Client ID</label>
-      <input type="text" id="p1-user" placeholder="username">
-    </div>
-    <div class="cf">
-      <label>Password / Secret</label>
-      <input type="password" id="p1-pass" placeholder="password">
-    </div>
-    <div class="cf full">
-      <label>Actor homePage (Fusion base URL)</label>
-      <input type="text" id="p1-hp" placeholder="https://your-tenant.fa.oraclecloud.com">
-    </div>
-    <button class="save-lrs" id="p1-savebtn" onclick="_saveCfg('p1')">Save settings</button>
+    <div class="cf full"><label>LRS Statements Endpoint</label><input type="text" id="p1-ep" placeholder="https://your-lrs/xAPI/statements"></div>
+    <div class="cf"><label>Username / Client ID</label><input type="text" id="p1-user" placeholder="username"></div>
+    <div class="cf"><label>Password / Secret</label><input type="password" id="p1-pass" placeholder="password"></div>
+    <div class="cf full"><label>Actor homePage (LMS base URL)</label><input type="text" id="p1-hp" placeholder="https://your-tenant.fa.oraclecloud.com"></div>
   </div>
 </div>
-
 <div class="hdr">
   <h1>Onboarding Task Tracker</h1>
-  <p>For each onboarding area, mark the tasks you have completed and toggle whether the outcome was positive.</p>
-  <div class="auth-bar" id="p1-auth"><span style="font-size:13px;color:#94a3b8">Loading…</span></div>
+  <p>Mark completed tasks across IT, Compliance and L&D onboarding. Each checked task sends an xAPI statement.</p>
+  <div class="user-pill">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    <span id="p1-uname">—</span>
+  </div>
 </div>
-
 <div class="tabs">
   <button class="tab on" onclick="showTab('it',this)">IT Onboarding</button>
   <button class="tab" onclick="showTab('compliance',this)">Compliance</button>
   <button class="tab" onclick="showTab('ld',this)">L&amp;D Onboarding</button>
 </div>
-
 <div id="p1-it" class="panel on"></div>
 <div id="p1-compliance" class="panel"></div>
 <div id="p1-ld" class="panel"></div>
-
 </div>
-</div>
-
 <script>
 (function(){
-const MODS=[
-  {id:'it',iri:'urn:xapi:onboarding:it',title:'IT Onboarding',tasks:[
-    {id:'it1',label:'Set up company email account'},
-    {id:'it2',label:'Install required software and tools'},
-    {id:'it3',label:'Complete IT security briefing'},
-    {id:'it4',label:'Configure VPN access'},
-    {id:'it5',label:'Register company devices with IT'}
-  ]},
-  {id:'compliance',iri:'urn:xapi:onboarding:compliance',title:'Compliance Onboarding',tasks:[
-    {id:'co1',label:'Read and acknowledge the Code of Conduct'},
-    {id:'co2',label:'Complete GDPR awareness training'},
-    {id:'co3',label:'Sign NDA and compliance documentation'},
-    {id:'co4',label:'Complete anti-bribery and corruption training'},
-    {id:'co5',label:'Review data classification and handling policy'}
-  ]},
-  {id:'ld',iri:'urn:xapi:onboarding:ld',title:'L&D Onboarding',tasks:[
-    {id:'ld1',label:'Meet with your L&D coordinator'},
-    {id:'ld2',label:'Explore the learning catalogue'},
-    {id:'ld3',label:'Create and configure your LMS account'},
-    {id:'ld4',label:'Complete the learning needs assessment'},
-    {id:'ld5',label:'Agree on your first 30-day learning plan'}
-  ]}
+var MODS=[
+  {id:'it',tasks:[{id:'it1',label:'Set up company email account'},{id:'it2',label:'Install required software and tools'},{id:'it3',label:'Complete IT security briefing'},{id:'it4',label:'Configure VPN access'},{id:'it5',label:'Register company devices with IT'}]},
+  {id:'compliance',tasks:[{id:'co1',label:'Read and acknowledge the Code of Conduct'},{id:'co2',label:'Complete GDPR awareness training'},{id:'co3',label:'Sign NDA and compliance documentation'},{id:'co4',label:'Complete anti-bribery and corruption training'},{id:'co5',label:'Review data classification and handling policy'}]},
+  {id:'ld',tasks:[{id:'ld1',label:'Meet with your L&D coordinator'},{id:'ld2',label:'Explore the learning catalogue'},{id:'ld3',label:'Create and configure your LMS account'},{id:'ld4',label:'Complete the learning needs assessment'},{id:'ld5',label:'Agree on your first 30-day learning plan'}]}
 ];
 
+// Read from localStorage (populated by index-task-tracker.html after login)
+var uEmail=localStorage.getItem('xapi_user_email')||'';
+document.getElementById('p1-uname').textContent=uEmail||'—';
+var ep=localStorage.getItem('xapi_ep')||'';
+var usr=localStorage.getItem('xapi_user')||'';
+var pass=localStorage.getItem('xapi_pass')||'';
+var hp=localStorage.getItem('xapi_hp')||'';
+if(ep)document.getElementById('p1-ep').value=ep;
+if(usr)document.getElementById('p1-user').value=usr;
+if(pass)document.getElementById('p1-pass').value=pass;
+if(hp)document.getElementById('p1-hp').value=hp;
 
-const _MSAL_CFG = {
-  auth:{clientId:'90bb4797-9bfc-4a7a-9ffa-0684ee7ee13c',
-    authority:'https://login.microsoftonline.com/16a66ef2-971f-4366-b8ad-9805ce738ec8',
-    redirectUri:window.location.href.split('?')[0].split('#')[0]},
-  cache:{cacheLocation:'localStorage',storeAuthStateInCookie:true}
+// Build panels
+MODS.forEach(function(mod){
+  var panel=document.getElementById('p1-'+mod.id);
+  var h='<div class="task-list">';
+  mod.tasks.forEach(function(t){
+    h+='<div class="trow" id="tr-'+t.id+'">'+
+      '<input type="checkbox" class="tcheck" id="cb-'+t.id+'" onchange="onCheck(\''+t.id+'\')">'+
+      '<label class="tlabel" for="cb-'+t.id+'">'+t.label+'</label>'+
+      '<div class="sw-wrap"><span class="sw-text" id="swt-'+t.id+'">—</span>'+
+      '<label class="sw"><input type="checkbox" id="sw-'+t.id+'" disabled onchange="onSw(\''+t.id+'\')"><span class="sw-tr"></span></label></div>'+
+    '</div>';
+  });
+  h+='</div><div class="sbar">'+
+    '<button class="btn" id="sbtn-'+mod.id+'" onclick="doSend(\''+mod.id+'\')">'+
+    '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>'+
+    'Send module</button><span class="st" id="sst-'+mod.id+'"></span></div>';
+  panel.innerHTML=h;
+});
+
+window.showTab=function(id,btn){
+  MODS.forEach(function(m){document.getElementById('p1-'+m.id).classList.toggle('on',m.id===id);});
+  document.querySelectorAll('.tab').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
 };
-let _msalApp;
-let uEmail = localStorage.getItem('xapi_user_email')||'';
-let uName  = localStorage.getItem('xapi_user_name') ||'';
-
-(async function(){
-  _msalApp = new msal.PublicClientApplication(_MSAL_CFG);
-  try{ await _msalApp.initialize(); }catch(e){ console.warn('MSAL init:', e.message); }
-  if(!uEmail){
-    const accs = _msalApp.getAllAccounts();
-    if(accs.length){
-      try{
-        const r = await _msalApp.acquireTokenSilent({scopes:['User.Read'],account:accs[0]});
-        _saveUser(r.account.username, r.account.name||r.account.username);
-      }catch(e){}
+window.onCheck=function(tid){
+  var cb=document.getElementById('cb-'+tid),sw=document.getElementById('sw-'+tid),row=document.getElementById('tr-'+tid),txt=document.getElementById('swt-'+tid);
+  sw.disabled=!cb.checked;
+  if(!cb.checked){sw.checked=false;row.classList.remove('done');txt.textContent='—';txt.className='sw-text';}
+  else{row.classList.add('done');txt.textContent='positive';txt.className='sw-text pos';}
+};
+window.onSw=function(tid){
+  var sw=document.getElementById('sw-'+tid),txt=document.getElementById('swt-'+tid);
+  txt.textContent=sw.checked?'positive':'neutral';
+  txt.className=sw.checked?'sw-text pos':'sw-text';
+};
+window.doSend=async function(modId){
+  var mod=MODS.find(function(m){return m.id===modId;});
+  var epV=document.getElementById('p1-ep').value.trim();
+  var uV=document.getElementById('p1-user').value.trim();
+  var pV=document.getElementById('p1-pass').value.trim();
+  var hpV=document.getElementById('p1-hp').value.trim();
+  var btn=document.getElementById('sbtn-'+modId),st=document.getElementById('sst-'+modId);
+  var email=document.getElementById('p1-uname').textContent;
+  if(!epV){st.textContent='Please enter the LRS endpoint.';st.className='st err';return;}
+  var base=(hpV||'https://xapi-demo.org').replace(/\/$/,'');
+  var statements=[];
+  mod.tasks.forEach(function(t){
+    var cb=document.getElementById('cb-'+t.id);
+    if(!cb||!cb.checked)return;
+    var sw=document.getElementById('sw-'+t.id);
+    statements.push({
+      actor:{objectType:'Agent',account:{homePage:hpV||'https://xapi-demo.org',name:email}},
+      verb:{id:'http://adlnet.gov/expapi/verbs/completed',display:{'en-US':'completed'}},
+      object:{id:base+'/xapi/activities/onboarding/'+modId+'/'+t.id,objectType:'Activity',definition:{name:{'en-US':t.label},type:'http://adlnet.gov/expapi/activities/task'}},
+      result:{completion:true,success:sw?sw.checked:false},
+      context:{contextActivities:{parent:[{id:base+'/xapi/activities/onboarding/'+modId,objectType:'Activity'}]}}
+    });
+  });
+  if(!statements.length){st.textContent='No tasks checked.';st.className='st err';return;}
+  btn.disabled=true;st.textContent='Sending…';st.className='st loading';
+  try{
+    var hdrs={'Content-Type':'application/json','X-Experience-API-Version':'1.0.3'};
+    if(uV)hdrs['Authorization']='Basic '+btoa(uV+':'+pV);
+    var body=statements.length===1?statements[0]:statements;
+    var res=await fetch(epV,{method:'POST',headers:hdrs,body:JSON.stringify(body)});
+    if(res.ok){
+      st.textContent='✓ '+statements.length+' statement'+(statements.length>1?'s':'')+' sent.';
+      st.className='st ok';
+      mod.tasks.forEach(function(t){
+        var cb=document.getElementById('cb-'+t.id),sw=document.getElementById('sw-'+t.id);
+        if(cb)cb.disabled=true;if(sw)sw.disabled=true;
+      });
+    }else{
+      var txt2=await res.text();
+      st.textContent='Error '+res.status+': '+txt2.substring(0,120);
+      st.className='st err';btn.disabled=false;
     }
-  }
-  _renderAuth();
-  _loadCfg();
-})().catch(function(){ _renderAuth(); _loadCfg(); });
-
-function _saveUser(email,name){uEmail=email;uName=name;localStorage.setItem('xapi_user_email',email);localStorage.setItem('xapi_user_name',name);}
-function _clearUser(){uEmail='';uName='';localStorage.removeItem('xapi_user_email');localStorage.removeItem('xapi_user_name');}
-
-function _renderAuth(){
-  const el=document.getElementById('p1-auth');
-  if(!el)return;
-  if(uEmail){
-    el.innerHTML='<div class="user-pill"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><span>'+uEmail+'</span></div><button class="btn-signout" onclick="_doSignOut()">Sign out</button>';
-  }else{
-    el.innerHTML='<button class="btn-ms" onclick="_doSignIn()"><svg width="14" height="14" viewBox="0 0 21 21" fill="none"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>Sign in with Microsoft 365</button>';
-  }
-}
-
-async function _doSignIn(){
-  try{const r=await _msalApp.loginPopup({scopes:['User.Read']});_saveUser(r.account.username,r.account.name||r.account.username);_renderAuth();}catch(e){console.error(e);}
-}
-function _doSignOut(){_clearUser();try{_msalApp.logoutPopup();}catch(e){}; _renderAuth();}
-
-function _loadCfg(){
-  const ep=localStorage.getItem('xapi_ep')||'';
-  const u=localStorage.getItem('xapi_user')||'';
-  const p=localStorage.getItem('xapi_pass')||'';
-  const h=localStorage.getItem('xapi_hp')||'';
-  const eEl=document.getElementById('p1-ep');
-  const uEl=document.getElementById('p1-user');
-  const pEl=document.getElementById('p1-pass');
-  const hEl=document.getElementById('p1-hp');
-  if(eEl&&ep)eEl.value=ep;if(uEl&&u)uEl.value=u;if(pEl&&p)pEl.value=p;if(hEl&&h)hEl.value=h;
-}
-function _saveCfg(pfx){
-  localStorage.setItem('xapi_ep',document.getElementById(pfx+'-ep').value);
-  localStorage.setItem('xapi_user',document.getElementById(pfx+'-user').value);
-  localStorage.setItem('xapi_pass',document.getElementById(pfx+'-pass').value);
-  localStorage.setItem('xapi_hp',document.getElementById(pfx+'-hp').value);
-  const b=document.getElementById(pfx+'-savebtn');
-  if(b){const orig=b.textContent;b.textContent='✓ Saved';setTimeout(()=>b.textContent=orig,2000);}
-}
-)();
+  }catch(e){st.textContent='Network error: '+e.message;st.className='st err';btn.disabled=false;}
+};
+})();
 </script>
 </body>
 </html>
