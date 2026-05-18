@@ -73,6 +73,14 @@
 .btn:hover:not(:disabled){background:#1d4ed8}
 .btn:active:not(:disabled){transform:scale(.97)}
 .btn:disabled{background:#94a3b8;cursor:default}
+
+.auth-bar{display:flex;align-items:center;gap:10px;padding:6px 0;margin-bottom:8px;flex-wrap:wrap}
+.btn-ms{background:#0078d4;color:#fff;border:none;border-radius:7px;padding:7px 16px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:background .2s}
+.btn-ms:hover{background:#106ebe}
+.btn-signout{background:none;border:1px solid #e2e8f0;color:#64748b;border-radius:7px;padding:5px 12px;font-size:12px;cursor:pointer;transition:all .2s}
+.btn-signout:hover{border-color:#94a3b8;color:#1e293b}
+.save-lrs{margin-top:10px;background:#1e3a5f;color:#fff;border:none;border-radius:7px;padding:7px 18px;font-size:12px;font-weight:600;cursor:pointer;transition:background .2s}
+.save-lrs:hover{background:#1d4ed8}
 .st{font-size:13px;color:#64748b}
 .st.ok{color:#16a34a;font-weight:600}
 .st.err{color:#dc2626;font-weight:500}
@@ -81,6 +89,7 @@
 .sent-summary{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:#16a34a}
 .sent-detail{font-size:12px;font-weight:400;color:#4ade80;margin-left:2px}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.28.1/lib/msal-browser.min.js"></script>
 </head>
 <body>
 <div id="xp2-p2">
@@ -106,16 +115,14 @@
       <label>Actor homePage (Fusion base URL)</label>
       <input type="text" id="p2-hp" placeholder="https://your-tenant.fa.oraclecloud.com">
     </div>
+    <button class="save-lrs" id="p2-savebtn" onclick="_saveCfg('p2')">Save settings</button>
   </div>
 </div>
 
 <div class="hdr">
   <h1>Module Evaluation</h1>
   <p>For each onboarding module, confirm completion and rate your experience. Each evaluation is sent as a separate xAPI statement.</p>
-  <div class="user-pill">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-    <span id="p2-uname">Loading…</span>
-  </div>
+  <div class="auth-bar" id="p2-auth"><span style="font-size:13px;color:#94a3b8">Loading…</span></div>
 </div>
 
 <div class="mods" id="p2-mods"></div>
@@ -131,26 +138,70 @@ const MODS=[
   {id:'ld',iri:'urn:xapi:onboarding:ld',title:'L&D Onboarding',n:3}
 ];
 
-// ── Init: read everything from localStorage ──────────────────
-// Script runs at end of body — DOM already available, no DOMContentLoaded needed
-const uEmail = localStorage.getItem('xapi_user_email') || '';
-const _ep    = localStorage.getItem('xapi_ep')   || '';
-const _usr   = localStorage.getItem('xapi_user') || '';
-const _pass  = localStorage.getItem('xapi_pass') || '';
-const _hp    = localStorage.getItem('xapi_hp')   || '';
 
-(function applyConfig() {
-  const unameEl = document.getElementById('p2-uname');
-  if (unameEl) unameEl.textContent = uEmail || '—';
-  const epEl = document.getElementById('p2-ep');
-  const uEl  = document.getElementById('p2-user');
-  const pEl  = document.getElementById('p2-pass');
-  const hEl  = document.getElementById('p2-hp');
-  if (epEl && _ep)   epEl.value   = _ep;
-  if (uEl  && _usr)  uEl.value    = _usr;
-  if (pEl  && _pass) pEl.value    = _pass;
-  if (hEl  && _hp)   hEl.value    = _hp;
-})();
+const _MSAL_CFG = {
+  auth:{clientId:'90bb4797-9bfc-4a7a-9ffa-0684ee7ee13c',
+    authority:'https://login.microsoftonline.com/16a66ef2-971f-4366-b8ad-9805ce738ec8',
+    redirectUri:window.location.href.split('?')[0].split('#')[0]},
+  cache:{cacheLocation:'localStorage',storeAuthStateInCookie:true}
+};
+let _msalApp;
+let uEmail = localStorage.getItem('xapi_user_email')||'';
+let uName  = localStorage.getItem('xapi_user_name') ||'';
+
+(async function(){
+  _msalApp = new msal.PublicClientApplication(_MSAL_CFG);
+  try{ await _msalApp.initialize(); }catch(e){ console.warn('MSAL init:', e.message); }
+  if(!uEmail){
+    const accs = _msalApp.getAllAccounts();
+    if(accs.length){
+      try{
+        const r = await _msalApp.acquireTokenSilent({scopes:['User.Read'],account:accs[0]});
+        _saveUser(r.account.username, r.account.name||r.account.username);
+      }catch(e){}
+    }
+  }
+  _renderAuth();
+  _loadCfg();
+})().catch(function(){ _renderAuth(); _loadCfg(); });
+
+function _saveUser(email,name){uEmail=email;uName=name;localStorage.setItem('xapi_user_email',email);localStorage.setItem('xapi_user_name',name);}
+function _clearUser(){uEmail='';uName='';localStorage.removeItem('xapi_user_email');localStorage.removeItem('xapi_user_name');}
+
+function _renderAuth(){
+  const el=document.getElementById('p2-auth');
+  if(!el)return;
+  if(uEmail){
+    el.innerHTML='<div class="user-pill"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><span>'+uEmail+'</span></div><button class="btn-signout" onclick="_doSignOut()">Sign out</button>';
+  }else{
+    el.innerHTML='<button class="btn-ms" onclick="_doSignIn()"><svg width="14" height="14" viewBox="0 0 21 21" fill="none"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>Sign in with Microsoft 365</button>';
+  }
+}
+
+async function _doSignIn(){
+  try{const r=await _msalApp.loginPopup({scopes:['User.Read']});_saveUser(r.account.username,r.account.name||r.account.username);_renderAuth();}catch(e){console.error(e);}
+}
+function _doSignOut(){_clearUser();try{_msalApp.logoutPopup();}catch(e){}; _renderAuth();}
+
+function _loadCfg(){
+  const ep=localStorage.getItem('xapi_ep')||'';
+  const u=localStorage.getItem('xapi_user')||'';
+  const p=localStorage.getItem('xapi_pass')||'';
+  const h=localStorage.getItem('xapi_hp')||'';
+  const eEl=document.getElementById('p2-ep');
+  const uEl=document.getElementById('p2-user');
+  const pEl=document.getElementById('p2-pass');
+  const hEl=document.getElementById('p2-hp');
+  if(eEl&&ep)eEl.value=ep;if(uEl&&u)uEl.value=u;if(pEl&&p)pEl.value=p;if(hEl&&h)hEl.value=h;
+}
+function _saveCfg(pfx){
+  localStorage.setItem('xapi_ep',document.getElementById(pfx+'-ep').value);
+  localStorage.setItem('xapi_user',document.getElementById(pfx+'-user').value);
+  localStorage.setItem('xapi_pass',document.getElementById(pfx+'-pass').value);
+  localStorage.setItem('xapi_hp',document.getElementById(pfx+'-hp').value);
+  const b=document.getElementById(pfx+'-savebtn');
+  if(b){const orig=b.textContent;b.textContent='✓ Saved';setTimeout(()=>b.textContent=orig,2000);}
+}
 )();
 </script>
 </body>
