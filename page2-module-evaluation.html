@@ -6,203 +6,161 @@
 <title>Module Evaluation · xAPI</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-#xp2-p2{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;padding:28px 20px;color:#1e293b}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f8fafc;color:#1e293b;padding:24px 20px}
 .wrap{max-width:680px;margin:0 auto}
-
-/* Config */
-.cfg{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:18px 20px;margin-bottom:28px}
-.cfg-ttl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#94a3b8;margin-bottom:14px}
-.cfg-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.cf{display:flex;flex-direction:column;gap:4px}
+.cfg{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:18px 20px;margin-bottom:24px}
+.cfg-ttl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#94a3b8;margin-bottom:12px}
+.cfg-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cf{display:flex;flex-direction:column;gap:3px}
 .cf.full{grid-column:1/-1}
-.cf label{font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em}
-.cf input{border:1px solid #e2e8f0;border-radius:7px;padding:7px 11px;font-size:13px;color:#1e293b;background:#f8fafc;outline:none;transition:border-color .2s,background .2s}
+.cf label{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em}
+.cf input{border:1px solid #e2e8f0;border-radius:7px;padding:7px 10px;font-size:13px;color:#1e293b;background:#f8fafc;outline:none}
 .cf input:focus{border-color:#93c5fd;background:#fff}
-
-/* Header */
-.hdr{margin-bottom:26px}
-.hdr h1{font-size:21px;font-weight:700;color:#0f172a;letter-spacing:-.01em}
-.hdr p{font-size:14px;color:#64748b;margin-top:5px;line-height:1.55}
-.user-pill{display:inline-flex;align-items:center;gap:7px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:999px;padding:5px 13px;font-size:12px;color:#1d4ed8;font-weight:600;margin-top:10px}
-
-/* Module cards */
-.mods{display:flex;flex-direction:column;gap:18px}
-.mcard{background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:22px;transition:border-color .3s,background .3s}
+.hdr{margin-bottom:24px}
+.hdr h1{font-size:20px;font-weight:700;color:#0f172a}
+.hdr p{font-size:14px;color:#64748b;margin-top:4px;line-height:1.5}
+.user-pill{display:inline-flex;align-items:center;gap:6px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:999px;padding:4px 12px;font-size:12px;color:#1d4ed8;font-weight:600;margin-top:8px}
+.mods{display:flex;flex-direction:column;gap:16px}
+.mcard{background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:20px;transition:border-color .3s}
 .mcard.sent{border-color:#86efac;background:#f0fdf4}
-
-.mcard-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid #f1f5f9}
+.mcard-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f1f5f9}
 .mcard.sent .mcard-hdr{border-bottom-color:#dcfce7}
 .mtitle{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:700;color:#0f172a}
 .mnum{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:#e0e7ff;color:#4338ca;font-size:12px;font-weight:700;flex-shrink:0}
 .mcard.sent .mnum{background:#dcfce7;color:#16a34a}
 .sent-badge{display:inline-flex;align-items:center;gap:5px;background:#dcfce7;border:1px solid #86efac;border-radius:999px;padding:4px 12px;font-size:12px;font-weight:700;color:#16a34a}
-
-/* Completion row */
-.comp-row{display:flex;align-items:center;gap:10px;margin-bottom:18px;padding:12px 14px;background:#f8fafc;border-radius:9px;border:1px solid #e2e8f0}
-.comp-check{width:18px;height:18px;cursor:pointer;accent-color:#2563eb;flex-shrink:0}
+.comp-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:10px 14px;background:#f8fafc;border-radius:9px;border:1px solid #e2e8f0}
+.comp-check{width:17px;height:17px;cursor:pointer;accent-color:#2563eb;flex-shrink:0}
 .comp-check:disabled{cursor:default}
 .comp-label{font-size:14px;color:#475569;cursor:pointer;flex:1}
-
-/* Controls */
-.ctrl-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}
+.ctrl-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
 .ctrl-grp{display:flex;flex-direction:column;gap:8px}
 .ctrl-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#94a3b8}
 .toggle-inline{display:flex;align-items:center;gap:10px}
 .tog-txt{font-size:13px;font-weight:600;color:#94a3b8;transition:color .2s}
 .tog-txt.yes{color:#16a34a}
 .tog-txt.no{color:#dc2626}
-
-/* Score */
 .score-wrap{display:flex;align-items:center;gap:10px}
 .score-slider{flex:1;accent-color:#2563eb;cursor:pointer}
-.score-val{font-size:20px;font-weight:800;color:#0f172a;min-width:38px;text-align:right;font-variant-numeric:tabular-nums}
-
-/* Switch */
-.sw{position:relative;display:inline-block;width:38px;height:21px}
+.score-val{font-size:20px;font-weight:800;color:#0f172a;min-width:36px;text-align:right}
+.sw{position:relative;display:inline-block;width:37px;height:20px}
 .sw input{opacity:0;width:0;height:0}
-.sw-tr{position:absolute;top:0;left:0;right:0;bottom:0;background:#cbd5e1;border-radius:21px;transition:.25s;cursor:pointer}
-.sw-tr::before{position:absolute;content:"";height:15px;width:15px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.25s}
+.sw-tr{position:absolute;top:0;left:0;right:0;bottom:0;background:#cbd5e1;border-radius:20px;cursor:pointer;transition:.25s}
+.sw-tr::before{position:absolute;content:"";height:14px;width:14px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.25s}
 .sw input:checked+.sw-tr{background:#22c55e}
 .sw input:checked+.sw-tr::before{transform:translateX(17px)}
 .sw input:disabled+.sw-tr{opacity:.35;cursor:default}
-
-/* Footer */
-.card-footer{display:flex;align-items:center;gap:14px;padding-top:14px;border-top:1px solid #f1f5f9}
+.card-footer{display:flex;align-items:center;gap:12px;padding-top:12px;border-top:1px solid #f1f5f9}
 .mcard.sent .card-footer{border-top-color:#dcfce7}
-.btn{background:#1e3a5f;color:#fff;border:none;border-radius:8px;padding:9px 22px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:background .2s,transform .1s}
-.btn:hover:not(:disabled){background:#1d4ed8}
-.btn:active:not(:disabled){transform:scale(.97)}
-.btn:disabled{background:#94a3b8;cursor:default}
-
-.auth-bar{display:flex;align-items:center;gap:10px;padding:6px 0;margin-bottom:8px;flex-wrap:wrap}
-.btn-ms{background:#0078d4;color:#fff;border:none;border-radius:7px;padding:7px 16px;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:background .2s}
-.btn-ms:hover{background:#106ebe}
-.btn-signout{background:none;border:1px solid #e2e8f0;color:#64748b;border-radius:7px;padding:5px 12px;font-size:12px;cursor:pointer;transition:all .2s}
-.btn-signout:hover{border-color:#94a3b8;color:#1e293b}
-.save-lrs{margin-top:10px;background:#1e3a5f;color:#fff;border:none;border-radius:7px;padding:7px 18px;font-size:12px;font-weight:600;cursor:pointer;transition:background .2s}
-.save-lrs:hover{background:#1d4ed8}
+.btn-send{background:#1e3a5f;color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:background .2s}
+.btn-send:hover:not(:disabled){background:#1d4ed8}
+.btn-send:disabled{background:#94a3b8;cursor:default}
 .st{font-size:13px;color:#64748b}
 .st.ok{color:#16a34a;font-weight:600}
-.st.err{color:#dc2626;font-weight:500}
+.st.err{color:#dc2626}
 .st.loading{color:#2563eb}
-
 .sent-summary{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:#16a34a}
-.sent-detail{font-size:12px;font-weight:400;color:#4ade80;margin-left:2px}
+.sent-sub{font-size:12px;font-weight:400;color:#4ade80}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.28.1/lib/msal-browser.min.js"></script>
 </head>
 <body>
-<div id="xp2-p2">
-</div>
 <div class="wrap">
-
 <div class="cfg">
   <div class="cfg-ttl">LRS Configuration</div>
   <div class="cfg-grid">
-    <div class="cf full">
-      <label>LRS Statements Endpoint</label>
-      <input type="text" id="p2-ep" placeholder="https://your-lrs/xAPI/statements">
-    </div>
-    <div class="cf">
-      <label>Username / Client ID</label>
-      <input type="text" id="p2-user" placeholder="username">
-    </div>
-    <div class="cf">
-      <label>Password / Secret</label>
-      <input type="password" id="p2-pass" placeholder="password">
-    </div>
-    <div class="cf full">
-      <label>Actor homePage (Fusion base URL)</label>
-      <input type="text" id="p2-hp" placeholder="https://your-tenant.fa.oraclecloud.com">
-    </div>
-    <button class="save-lrs" id="p2-savebtn" onclick="_saveCfg('p2')">Save settings</button>
+    <div class="cf full"><label>LRS Statements Endpoint</label><input type="text" id="p2-ep" placeholder="https://your-lrs/xAPI/statements"></div>
+    <div class="cf"><label>Username / Client ID</label><input type="text" id="p2-user" placeholder="username"></div>
+    <div class="cf"><label>Password / Secret</label><input type="password" id="p2-pass" placeholder="password"></div>
+    <div class="cf full"><label>Actor homePage (LMS base URL)</label><input type="text" id="p2-hp" placeholder="https://your-tenant.fa.oraclecloud.com"></div>
   </div>
 </div>
-
 <div class="hdr">
   <h1>Module Evaluation</h1>
-  <p>For each onboarding module, confirm completion and rate your experience. Each evaluation is sent as a separate xAPI statement.</p>
-  <div class="auth-bar" id="p2-auth"><span style="font-size:13px;color:#94a3b8">Loading…</span></div>
+  <p>Rate each onboarding module. Each evaluation is sent as a separate xAPI statement.</p>
+  <div class="user-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><span id="p2-uname">—</span></div>
 </div>
-
 <div class="mods" id="p2-mods"></div>
-
 </div>
-</div>
-
 <script>
 (function(){
-const MODS=[
-  {id:'it',iri:'urn:xapi:onboarding:it',title:'IT Onboarding',n:1},
-  {id:'compliance',iri:'urn:xapi:onboarding:compliance',title:'Compliance Onboarding',n:2},
-  {id:'ld',iri:'urn:xapi:onboarding:ld',title:'L&D Onboarding',n:3}
+var MODS=[
+  {id:'it',title:'IT Onboarding',n:1},
+  {id:'compliance',title:'Compliance Onboarding',n:2},
+  {id:'ld',title:'L&D Onboarding',n:3}
 ];
 
+var uEmail=localStorage.getItem('xapi_user_email')||'';
+document.getElementById('p2-uname').textContent=uEmail||'—';
+var ep=localStorage.getItem('xapi_ep')||'';
+var usr=localStorage.getItem('xapi_user')||'';
+var pass=localStorage.getItem('xapi_pass')||'';
+var hp=localStorage.getItem('xapi_hp')||'';
+if(ep)document.getElementById('p2-ep').value=ep;
+if(usr)document.getElementById('p2-user').value=usr;
+if(pass)document.getElementById('p2-pass').value=pass;
+if(hp)document.getElementById('p2-hp').value=hp;
 
-const _MSAL_CFG = {
-  auth:{clientId:'90bb4797-9bfc-4a7a-9ffa-0684ee7ee13c',
-    authority:'https://login.microsoftonline.com/16a66ef2-971f-4366-b8ad-9805ce738ec8',
-    redirectUri:window.location.href.split('?')[0].split('#')[0]},
-  cache:{cacheLocation:'localStorage',storeAuthStateInCookie:true}
-};
-let _msalApp;
-let uEmail = localStorage.getItem('xapi_user_email')||'';
-let uName  = localStorage.getItem('xapi_user_name') ||'';
+var container=document.getElementById('p2-mods');
+MODS.forEach(function(mod){
+  var div=document.createElement('div');
+  div.className='mcard';div.id='p2c-'+mod.id;
+  div.innerHTML='<div class="mcard-hdr"><div class="mtitle"><span class="mnum">'+mod.n+'</span>'+mod.title+'</div><div id="p2badge-'+mod.id+'"></div></div>'+
+    '<div class="comp-row"><input type="checkbox" class="comp-check" id="p2comp-'+mod.id+'" checked><label class="comp-label" for="p2comp-'+mod.id+'">I have completed this module</label></div>'+
+    '<div class="ctrl-row">'+
+      '<div class="ctrl-grp"><div class="ctrl-lbl">Satisfied with this module?</div>'+
+        '<div class="toggle-inline"><span class="tog-txt yes" id="p2y-'+mod.id+'">Yes</span>'+
+        '<label class="sw"><input type="checkbox" id="p2sat-'+mod.id+'" checked onchange="onSat(\''+mod.id+'\')"><span class="sw-tr"></span></label>'+
+        '<span class="tog-txt" id="p2n-'+mod.id+'">No</span></div></div>'+
+      '<div class="ctrl-grp"><div class="ctrl-lbl">Score (0–100)</div>'+
+        '<div class="score-wrap"><input type="range" class="score-slider" id="p2sc-'+mod.id+'" min="0" max="100" value="75" step="1" oninput="onSc(\''+mod.id+'\')">'+
+        '<span class="score-val" id="p2sv-'+mod.id+'">75</span></div></div>'+
+    '</div>'+
+    '<div class="card-footer" id="p2foot-'+mod.id+'">'+
+      '<button class="btn-send" id="p2btn-'+mod.id+'" onclick="doSend(\''+mod.id+'\')">'+
+        '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>'+
+        'Send evaluation</button><span class="st" id="p2st-'+mod.id+'"></span></div>';
+  container.appendChild(div);
+});
 
-(async function(){
-  _msalApp = new msal.PublicClientApplication(_MSAL_CFG);
-  try{ await _msalApp.initialize(); }catch(e){ console.warn('MSAL init:', e.message); }
-  if(!uEmail){
-    const accs = _msalApp.getAllAccounts();
-    if(accs.length){
-      try{
-        const r = await _msalApp.acquireTokenSilent({scopes:['User.Read'],account:accs[0]});
-        _saveUser(r.account.username, r.account.name||r.account.username);
-      }catch(e){}
+window.onSat=function(id){var sw=document.getElementById('p2sat-'+id);document.getElementById('p2y-'+id).className=sw.checked?'tog-txt yes':'tog-txt';document.getElementById('p2n-'+id).className=sw.checked?'tog-txt':'tog-txt no';};
+window.onSc=function(id){document.getElementById('p2sv-'+id).textContent=document.getElementById('p2sc-'+id).value;};
+
+window.doSend=async function(modId){
+  var mod=MODS.find(function(m){return m.id===modId;});
+  var epV=document.getElementById('p2-ep').value.trim();
+  var uV=document.getElementById('p2-user').value.trim();
+  var pV=document.getElementById('p2-pass').value.trim();
+  var hpV=document.getElementById('p2-hp').value.trim();
+  var btn=document.getElementById('p2btn-'+modId),st=document.getElementById('p2st-'+modId);
+  var email=document.getElementById('p2-uname').textContent;
+  if(!epV){st.textContent='Please enter the LRS endpoint.';st.className='st err';return;}
+  var completed=document.getElementById('p2comp-'+modId).checked;
+  var success=document.getElementById('p2sat-'+modId).checked;
+  var raw=parseInt(document.getElementById('p2sc-'+modId).value,10);
+  var scaled=Math.round(raw)/100;
+  var base=(hpV||'https://xapi-demo.org').replace(/\/$/,'');
+  btn.disabled=true;st.textContent='Sending…';st.className='st loading';
+  var stmt={
+    actor:{objectType:'Agent',account:{homePage:hpV||'https://xapi-demo.org',name:email}},
+    verb:{id:'http://adlnet.gov/expapi/verbs/completed',display:{'en-US':'completed'}},
+    object:{id:base+'/xapi/activities/onboarding/'+modId,objectType:'Activity',definition:{name:{'en-US':mod.title},type:'http://adlnet.gov/expapi/activities/module'}},
+    result:{completion:completed,success:success,score:{raw:raw,scaled:scaled,min:0,max:100}}
+  };
+  try{
+    var hdrs={'Content-Type':'application/json','X-Experience-API-Version':'1.0.3'};
+    if(uV)hdrs['Authorization']='Basic '+btoa(uV+':'+pV);
+    var res=await fetch(epV,{method:'POST',headers:hdrs,body:JSON.stringify(stmt)});
+    if(res.ok){
+      document.getElementById('p2c-'+modId).classList.add('sent');
+      document.getElementById('p2badge-'+modId).innerHTML='<span class="sent-badge"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>Sent</span>';
+      document.getElementById('p2foot-'+modId).innerHTML='<div class="sent-summary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Statement sent<span class="sent-sub">· score '+raw+'/100 · '+(success?'satisfied':'not satisfied')+'</span></div>';
+      document.getElementById('p2c-'+modId).querySelectorAll('input').forEach(function(i){i.disabled=true;});
+    }else{
+      var txt=await res.text();st.textContent='Error '+res.status+': '+txt.substring(0,120);st.className='st err';btn.disabled=false;
     }
-  }
-  _renderAuth();
-  _loadCfg();
-})().catch(function(){ _renderAuth(); _loadCfg(); });
-
-function _saveUser(email,name){uEmail=email;uName=name;localStorage.setItem('xapi_user_email',email);localStorage.setItem('xapi_user_name',name);}
-function _clearUser(){uEmail='';uName='';localStorage.removeItem('xapi_user_email');localStorage.removeItem('xapi_user_name');}
-
-function _renderAuth(){
-  const el=document.getElementById('p2-auth');
-  if(!el)return;
-  if(uEmail){
-    el.innerHTML='<div class="user-pill"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><span>'+uEmail+'</span></div><button class="btn-signout" onclick="_doSignOut()">Sign out</button>';
-  }else{
-    el.innerHTML='<button class="btn-ms" onclick="_doSignIn()"><svg width="14" height="14" viewBox="0 0 21 21" fill="none"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>Sign in with Microsoft 365</button>';
-  }
-}
-
-async function _doSignIn(){
-  try{const r=await _msalApp.loginPopup({scopes:['User.Read']});_saveUser(r.account.username,r.account.name||r.account.username);_renderAuth();}catch(e){console.error(e);}
-}
-function _doSignOut(){_clearUser();try{_msalApp.logoutPopup();}catch(e){}; _renderAuth();}
-
-function _loadCfg(){
-  const ep=localStorage.getItem('xapi_ep')||'';
-  const u=localStorage.getItem('xapi_user')||'';
-  const p=localStorage.getItem('xapi_pass')||'';
-  const h=localStorage.getItem('xapi_hp')||'';
-  const eEl=document.getElementById('p2-ep');
-  const uEl=document.getElementById('p2-user');
-  const pEl=document.getElementById('p2-pass');
-  const hEl=document.getElementById('p2-hp');
-  if(eEl&&ep)eEl.value=ep;if(uEl&&u)uEl.value=u;if(pEl&&p)pEl.value=p;if(hEl&&h)hEl.value=h;
-}
-function _saveCfg(pfx){
-  localStorage.setItem('xapi_ep',document.getElementById(pfx+'-ep').value);
-  localStorage.setItem('xapi_user',document.getElementById(pfx+'-user').value);
-  localStorage.setItem('xapi_pass',document.getElementById(pfx+'-pass').value);
-  localStorage.setItem('xapi_hp',document.getElementById(pfx+'-hp').value);
-  const b=document.getElementById(pfx+'-savebtn');
-  if(b){const orig=b.textContent;b.textContent='✓ Saved';setTimeout(()=>b.textContent=orig,2000);}
-}
-)();
+  }catch(e){st.textContent='Network error: '+e.message;st.className='st err';btn.disabled=false;}
+};
+})();
 </script>
 </body>
 </html>

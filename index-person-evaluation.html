@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>xAPI Tools · Person Evaluation</title>
+<script src="https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.28.1/lib/msal-browser.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f1f5f9;color:#1e293b}
+.topbar{background:#1e3a5f;height:52px;display:flex;align-items:center;padding:0 24px;justify-content:space-between}
+.topbar-logo{display:flex;align-items:center;gap:8px}
+.dots{display:flex;gap:4px}.dot{width:7px;height:7px;border-radius:50%}
+.dot:nth-child(1){background:#60a5fa}.dot:nth-child(2){background:#34d399}.dot:nth-child(3){background:#f59e0b}
+.logo-name{font-size:13px;font-weight:700;color:#fff;letter-spacing:.04em}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.user-name{font-size:13px;color:#93c5fd;font-weight:500}
+.btn-out{background:none;border:1px solid rgba(255,255,255,.2);color:#93c5fd;border-radius:6px;padding:4px 12px;font-size:12px;cursor:pointer}
+.btn-out:hover{background:rgba(255,255,255,.1);color:#fff}
+.login-screen{min-height:calc(100vh - 52px);display:flex;align-items:center;justify-content:center;padding:32px 20px}
+.login-card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:36px;max-width:400px;width:100%;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.login-card h1{font-size:22px;font-weight:800;color:#0f172a;margin-bottom:8px}
+.login-card p{font-size:14px;color:#64748b;line-height:1.6;margin-bottom:28px}
+.btn-ms{width:100%;background:#0078d4;color:#fff;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:background .2s}
+.btn-ms:hover{background:#106ebe}.btn-ms:disabled{background:#94a3b8;cursor:default}
+.login-note{font-size:12px;color:#94a3b8;margin-top:12px}
+.login-err{font-size:13px;color:#dc2626;margin-top:12px;font-weight:500}
+.main-screen{min-height:calc(100vh - 52px);padding:36px 24px;max-width:600px;margin:0 auto}
+.welcome{margin-bottom:28px}.welcome h2{font-size:20px;font-weight:700;color:#0f172a}.welcome p{font-size:14px;color:#64748b;margin-top:4px}
+.cfg-box{background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;padding:20px;margin-bottom:24px}
+.cfg-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#94a3b8;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.cfg-saved{font-size:11px;font-weight:600;color:#16a34a;display:none;align-items:center;gap:4px}.cfg-saved.on{display:flex}
+.cfg-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cf{display:flex;flex-direction:column;gap:3px}.cf.full{grid-column:1/-1}
+.cf label{font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em}
+.cf input{border:1px solid #e2e8f0;border-radius:7px;padding:7px 10px;font-size:13px;color:#1e293b;background:#f8fafc;outline:none}
+.cf input:focus{border-color:#93c5fd;background:#fff}
+.btn-save{margin-top:12px;background:#1e3a5f;color:#fff;border:none;border-radius:7px;padding:8px 20px;font-size:12px;font-weight:700;cursor:pointer}.btn-save:hover{background:#1d4ed8}
+.tool-card{background:#fff;border:1.5px solid #e2e8f0;border-radius:14px;padding:24px;cursor:pointer;transition:border-color .2s,transform .15s,box-shadow .2s}
+.tool-card:hover{border-color:#93c5fd;transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.08)}
+.card-icon{width:46px;height:46px;border-radius:11px;background:#f5f3ff;display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.card-num{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;margin-bottom:4px}
+.card-title{font-size:18px;font-weight:800;color:#0f172a;margin-bottom:8px}
+.card-desc{font-size:14px;color:#64748b;line-height:1.6;margin-bottom:14px}
+.card-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.tag{font-size:11px;font-weight:600;padding:3px 9px;border-radius:5px}
+.tag.blue{background:#eff6ff;color:#2563eb}.tag.purple{background:#f5f3ff;color:#7c3aed}.tag.amber{background:#fffbeb;color:#d97706}
+.card-cta{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:700;color:#1d4ed8}
+.tool-panel{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:100;flex-direction:column;background:#f1f5f9}
+.tool-panel.on{display:flex}
+.tool-bar{background:#1e3a5f;height:48px;display:flex;align-items:center;padding:0 20px;gap:14px;flex-shrink:0}
+.btn-back{background:none;border:1px solid rgba(255,255,255,.25);color:#93c5fd;border-radius:7px;padding:5px 14px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}
+.btn-back:hover{background:rgba(255,255,255,.1);color:#fff}
+.panel-title{font-size:14px;font-weight:600;color:#fff}
+.tool-frame{flex:1;border:none;width:100%;background:#fff}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-logo"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><span class="logo-name">xAPI MS365 Tools</span></div>
+  <div class="topbar-right hidden" id="topbar-right"><span class="user-name" id="tb-user"></span><button class="btn-out" onclick="doSignOut()">Sign out</button></div>
+</div>
+<div class="login-screen" id="screen-login">
+  <div class="login-card">
+    <h1>Person Evaluation</h1>
+    <p>Sign in with your Microsoft 365 account to get started. Your identity will be used as the xAPI actor.</p>
+    <button class="btn-ms" id="btn-login" onclick="doLogin()">
+      <svg width="18" height="18" viewBox="0 0 21 21" fill="none"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>
+      Sign in with Microsoft 365
+    </button>
+    <p class="login-note">Your email will be used as the xAPI actor identifier</p>
+    <div class="login-err hidden" id="login-err"></div>
+  </div>
+</div>
+<div class="main-screen hidden" id="screen-main">
+  <div class="welcome"><h2>Welcome, <span id="welcome-name"></span></h2><p>Configure your LRS, then open the tool to start sending xAPI statements.</p></div>
+  <div class="cfg-box">
+    <div class="cfg-title">LRS Configuration<span class="cfg-saved" id="cfg-saved"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Saved</span></div>
+    <div class="cfg-grid">
+      <div class="cf full"><label>LRS Statements Endpoint</label><input type="text" id="lrs-ep" placeholder="https://your-lrs/xAPI/statements"></div>
+      <div class="cf"><label>Username / Client ID</label><input type="text" id="lrs-user" placeholder="username"></div>
+      <div class="cf"><label>Password / Secret</label><input type="password" id="lrs-pass" placeholder="password"></div>
+      <div class="cf full"><label>Actor homePage (LMS base URL)</label><input type="text" id="lrs-hp" placeholder="https://your-tenant.fa.oraclecloud.com"></div>
+    </div>
+    <button class="btn-save" onclick="saveCfg()">Save settings</button>
+  </div>
+  <div class="tool-card" onclick="openTool()">
+    <div class="card-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+    <div class="card-num">Demo 03</div>
+    <div class="card-title">Person Evaluation</div>
+    <div class="card-desc">Evaluate your onboarding referent. Select a person from the list, rate specific behaviours, and give an overall score. The evaluated person becomes the Agent object in the xAPI statement.</div>
+    <div class="card-tags"><span class="tag purple">evaluated</span><span class="tag blue">object: Agent</span><span class="tag amber">context.extensions</span></div>
+    <div class="card-cta">Open tool <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+  </div>
+</div>
+<div class="tool-panel" id="tool-panel">
+  <div class="tool-bar">
+    <button class="btn-back" onclick="closeTool()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>Back</button>
+    <span class="panel-title">Person Evaluation</span>
+  </div>
+  <iframe class="tool-frame" id="tool-frame" src="" title="Person Evaluation"></iframe>
+</div>
+<script>
+const MSAL_CFG={auth:{clientId:'90bb4797-9bfc-4a7a-9ffa-0684ee7ee13c',authority:'https://login.microsoftonline.com/16a66ef2-971f-4366-b8ad-9805ce738ec8',redirectUri:window.location.href.split('?')[0].split('#')[0]},cache:{cacheLocation:'localStorage',storeAuthStateInCookie:true}};
+let msalApp;
+window.onload=async function(){
+  msalApp=new msal.PublicClientApplication(MSAL_CFG);
+  await msalApp.initialize();
+  try{const r=await msalApp.handleRedirectPromise();if(r){showMain(r.account);return;}}catch(e){}
+  const accs=msalApp.getAllAccounts();
+  if(accs.length){try{const r=await msalApp.acquireTokenSilent({scopes:['User.Read'],account:accs[0]});showMain(r.account);return;}catch(e){}}
+  const saved=localStorage.getItem('xapi_user_email');
+  if(saved)showMainFromStorage(saved);
+};
+async function doLogin(){const btn=document.getElementById('btn-login');btn.disabled=true;try{const r=await msalApp.loginPopup({scopes:['User.Read']});showMain(r.account);}catch(e){document.getElementById('login-err').textContent='Login error: '+e.message;document.getElementById('login-err').classList.remove('hidden');btn.disabled=false;}}
+function showMain(account){const email=account.username,name=account.name||email.split('@')[0];localStorage.setItem('xapi_user_email',email);localStorage.setItem('xapi_user_name',name);showMainFromStorage(email,name);}
+function showMainFromStorage(email,name){name=name||localStorage.getItem('xapi_user_name')||email.split('@')[0];document.getElementById('screen-login').classList.add('hidden');document.getElementById('screen-main').classList.remove('hidden');document.getElementById('topbar-right').classList.remove('hidden');document.getElementById('tb-user').textContent=email;document.getElementById('welcome-name').textContent=name.split(' ')[0];loadCfg();}
+function doSignOut(){localStorage.removeItem('xapi_user_email');localStorage.removeItem('xapi_user_name');try{msalApp.logoutPopup();}catch(e){}document.getElementById('screen-main').classList.add('hidden');document.getElementById('screen-login').classList.remove('hidden');document.getElementById('topbar-right').classList.add('hidden');document.getElementById('btn-login').disabled=false;}
+function loadCfg(){const ep=localStorage.getItem('xapi_ep')||'',usr=localStorage.getItem('xapi_user')||'',pass=localStorage.getItem('xapi_pass')||'',hp=localStorage.getItem('xapi_hp')||'';if(ep)document.getElementById('lrs-ep').value=ep;if(usr)document.getElementById('lrs-user').value=usr;if(pass)document.getElementById('lrs-pass').value=pass;if(hp)document.getElementById('lrs-hp').value=hp;if(ep)document.getElementById('cfg-saved').classList.add('on');}
+function saveCfg(){localStorage.setItem('xapi_ep',document.getElementById('lrs-ep').value);localStorage.setItem('xapi_user',document.getElementById('lrs-user').value);localStorage.setItem('xapi_pass',document.getElementById('lrs-pass').value);localStorage.setItem('xapi_hp',document.getElementById('lrs-hp').value);document.getElementById('cfg-saved').classList.add('on');}
+function openTool(){const base=window.location.href.split('/').slice(0,-1).join('/')+'/';document.getElementById('tool-frame').src=base+'page3-person-evaluation.html';document.getElementById('tool-panel').classList.add('on');}
+function closeTool(){document.getElementById('tool-panel').classList.remove('on');document.getElementById('tool-frame').src='';}
+</script>
+</body>
+</html>
