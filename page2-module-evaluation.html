@@ -142,7 +142,7 @@ window.doSend=async function(modId){
   btn.disabled=true;st.textContent='Sending…';st.className='st loading';
   var stmt={
     actor:{objectType:'Agent',account:{homePage:hpV||'https://xapi-demo.org',name:email}},
-    verb:{id:'http://adlnet.gov/expapi/verbs/completed',display:{'en-US':'completed'}},
+    verb:{id:'http://id.tincanapi.com/verb/evaluated',display:{'en-US':'evaluated'}},
     object:{id:base+'/xapi/activities/onboarding/'+modId,objectType:'Activity',definition:{name:{'en-US':mod.title},type:'http://adlnet.gov/expapi/activities/module'}},
     result:{completion:completed,success:success,score:{raw:raw,scaled:scaled,min:0,max:100}}
   };
