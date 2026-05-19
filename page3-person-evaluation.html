@@ -205,7 +205,7 @@ window.doSend=async function(){
   var scaled=Math.round(raw)/100;
   var base=(hpV||'https://xapi-demo.org').replace(/\/$/,'');
   var taskResults={};
-  TASKS.forEach(function(t){var cb=document.getElementById('p3cb-'+t.id);taskResults[t.id]=cb?cb.checked:false;});
+  TASKS.forEach(function(t){var cb=document.getElementById('p3cb-'+t.id);taskResults[t.label]=cb?cb.checked:false;});
   btn.disabled=true;st.textContent='Sending…';st.className='st loading';
   var stmt={
     actor:{objectType:'Agent',account:{homePage:hpV||'https://xapi-demo.org',name:email}},
